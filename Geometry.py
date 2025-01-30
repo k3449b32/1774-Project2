@@ -22,26 +22,26 @@ class Geometry:
 
         # Calculating the distances between conductors
         if self.xa == self.xb:
-            Dab = abs(self.xa - self.xb)
-        if self.ya == self.yb:
             Dab = abs(self.ya - self.yb)
+        if self.ya == self.yb:
+            Dab = abs(self.xa - self.xb)
         else:
-            Dab = ((self.ya - self.yb)**2 + (self.xa - self.xb)**2) ** (1/2)
+            Dab = np.sqrt((self.ya - self.yb)**2 + (self.xa - self.xb)**2)
 
         if self.xb == self.xc:
-            Dbc = abs(self.xb - self.xc)
-        if self.yb == self.yc:
             Dbc = abs(self.yb - self.yc)
+        if self.yb == self.yc:
+            Dbc = abs(self.xb - self.xc)
         else:
-            Dbc = ((self.yb - self.yc)**2 + (self.xb - self.xc)**2) ** (1/2)
+            Dbc = np.sqrt((self.yb - self.yc)**2 + (self.xb - self.xc)**2)
 
         if self.xa == self.xc:
-            Dac = abs(self.xa - self.xc)
-        if self.ya == self.yb:
             Dac = abs(self.ya - self.yc)
+        if self.ya == self.yb:
+            Dac = abs(self.xa - self.xc)
         else:
-            Dac = ((self.ya - self.yc)**2 + (self.xa - self.xc)**2) ** (1/2)
+            Dac = np.sqrt((self.ya - self.yc)**2 + (self.xa - self.xc)**2)
 
         # Using the distances between conductors to calculate DEQ then returning the value
-        DEQ = (Dab * Dbc * Dac) ** (1 / 3)
+        DEQ = np.cbrt(Dab * Dbc * Dac)
         return DEQ
