@@ -21,11 +21,13 @@ class Bundle:
             self.DSL = 0
 
         if self.num_conductors == 2:
-            self.DSL = np.sqrt(self.conductor.GMR * (1 / 3.28))
-            self.DSC = np.sqrt((self.conductor.diam/2) * 1.5)
+            self.DSL = np.sqrt(self.conductor.GMR * (1 / 3.28)*self.spacing)
+            self.DSC = np.sqrt((self.conductor.diam/2) * 1.5*self.spacing)
 
         if self.num_conductors == 3:
-            self.DSL = np.cbrt(self.conductor.GMR * ((1.5 / 3.28) ** 2))
+            self.DSL = np.cbrt(self.conductor.GMR * ((1.5 / 3.28) ** 2)*self.spacing)
+            self.DSC = np.cbrt((self.conductor.diam/2)*self.spacing ** 2) #divide by meters
 
         if self.num_conductors == 4:
             self.DSL = 1.091 * (((1.5 / 3.28) ** 3) * self.conductor.GMR) ** (1 / 4)
+            self.DSC = 1.091*((self.conductor.diam / 2) * self.spacing ** 2) ** (1/4)
