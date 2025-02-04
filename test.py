@@ -19,8 +19,6 @@ transformer1.bus2.name, transformer1.power_rating)
 
 print(transformer1.impedance,transformer1.admittance)
 
-
-
 bundle1 = Bundle("Bundle 1", 2, 1.5, conductor1)
 
 geometry1 = Geometry("test", 0, 0, 50, 0, 25, 30)
