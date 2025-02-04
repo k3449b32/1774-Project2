@@ -22,3 +22,5 @@ class Transformer:
 
     def calc_yprim(self): #method to calculate admittance matrix
         pass
+
+
