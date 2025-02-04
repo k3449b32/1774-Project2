@@ -7,6 +7,8 @@ from Bus import Bus
 
 class TransmissionLine:
 
+    z_base = 230**2/100
+
     def __init__(self, name: str, bus1: Bus, bus2: Bus, bundle: Bundle, geometry: Geometry, length: float):
         self.name = name
         self.bus1 = bus1
@@ -30,7 +32,8 @@ class TransmissionLine:
 
     def calc_impedance(self): #z'=R'+jwL'
         self.L=(2*(10**-7))*np.log(self.deq/self.dsl) #calculate distributed inductance in ohms/meter
-        return self.r+1j*2*np.pi*60*self.L*3.28 #calcualte distributed impedance, multiplied by 3.28 ft to convert from ohms/meter to ohms/feet
+        return self.r + 1j*2*np.pi*60*self.L*1609 #calcualte distributed impedance, multiplied by 3.28 ft to convert from ohms/meter to ohms/feet
+
     def calc_admittance(self):
         self.C=(2*np.pi*self.e_nought)/(np.log((self.deq/self.dsc))) #calculate distributed capacitance in ohms/meter
-        return 2*np.pi*self.C*3.28 #return distributed admittance converted to ohms/feet, conductance omitted
+        return 1j*2*np.pi*60*self.C*1609 #return distributed admittance converted to ohms/feet, conductance omitted
