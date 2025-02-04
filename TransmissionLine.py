@@ -16,7 +16,7 @@ class TransmissionLine:
         self.length = length
 
         self.e_nought=8.85*10**-12 #value of e nought
-        self.r=self.bundle.conductor.resistance #obtain resistance of line, do not know if in ohms/mi or ohms/ft
+        self.r = self.bundle.conductor.resistance/self.bundle.num_conductors #obtain resistance of line, do not know if in ohms/mi or ohms/ft
 
         self.deq=self.geometry.Find_DEQ() #obtain the DEQ (geometric mean distance, or GMD) of the transmission line
         self.dsc=self.bundle.DSC #obtain dsc

@@ -9,4 +9,5 @@ class Bus:
         self.name = name
         self.base_kv = base_kv
         # Keeping an index of all bus instances
+        self.index = Bus.counter
         Bus.counter = Bus.counter + 1
