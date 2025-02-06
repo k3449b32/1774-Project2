@@ -19,7 +19,7 @@ class Transformer:
         return (self.impedance_percent/100)*np.exp(1j*np.atan(self.x_over_r_ratio))
 
     def calc_admittance(self): #method to calculate admittance
-        return 1/self.impedance
+        return 0
 
     def calc_yprim(self): #method to calculate admittance matrix
         pass

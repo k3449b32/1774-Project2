@@ -21,7 +21,7 @@ bundle1 = Bundle("Bundle 1", 2, 1.5, conductor1)
 print("\nValidating Bundle Class: ", bundle1.name, bundle1.num_conductors, bundle1.spacing, bundle1.conductor.name)
 print(bundle1.DSC, bundle1.DSL)
 
-transformer1 = Transformer('transformer1',bus1,bus2,500,2,3)
+transformer1 = Transformer('transformer1',bus1,bus3,500,2,3)
 print("\nValidating Transformer Class: ", transformer1.name, transformer1.bus1.name, transformer1.bus2.name, transformer1.power_rating)
 print(transformer1.impedance,transformer1.admittance)
 print(transformer1.y_matrix)

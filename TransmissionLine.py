@@ -27,18 +27,18 @@ class TransmissionLine:
         self.L=0 #initialize distributed inductance as zero
         self.C=0 #initialize distributed capacitance as zero
 
-        self.impedance=self.calc_impedance() #get value of impedance
-        self.admittance=self.calc_admittance() #get value of admittance
+        self.impedance=self.calc_impedance() * self.length # get value of impedance in ohms
+        self.admittance=self.calc_admittance() * self.length # get value of admittance in siemens
 
-        self.y_matrix = self.calc_y_matrix()
+        self.y_matrix = self.calc_y_matrix() # automatically creating the admittance matrix
 
     def calc_impedance(self): #z'=R'+jwL'
         self.L=(2*(10**-7))*np.log(self.deq/self.dsl) #calculate distributed inductance in ohms/meter
         return self.r + 1j*2*np.pi*60*self.L*1609 #calcualte distributed impedance, converting to ohms/miles
 
     def calc_admittance(self):
-        self.C=(2*np.pi*self.e_nought)/(np.log((self.deq/self.dsc))) #calculate distributed capacitance in ohms/meter
-        return 1j*2*np.pi*60*self.C*1609 #return distributed admittance converted to ohms/miles, conductance omitted
+        self.C=(2*np.pi*self.e_nought)/(np.log((self.deq/self.dsc))) #calculate distributed capacitance in siemens/meter
+        return 1j*2*np.pi*60*self.C*1609 #return distributed admittance converted to siemens/miles, conductance omitted
 
     def calc_y_matrix(self):
         y_matrix = np.zeros((2,2), dtype=complex) # initializing a 2x2 matrix of zeros
