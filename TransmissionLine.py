@@ -18,7 +18,7 @@ class TransmissionLine:
         self.length = length
 
         self.e_nought=8.85*10**-12 #value of e nought
-        self.r = self.bundle.conductor.resistance/self.bundle.num_conductors #obtain resistance of line, do not know if in ohms/mi or ohms/ft
+        self.r = self.bundle.conductor.resistance/self.bundle.num_conductors #obtain resistance of line, assuming ohms/mile
 
         self.deq=self.geometry.Find_DEQ() #obtain the DEQ (geometric mean distance, or GMD) of the transmission line
         self.dsc=self.bundle.DSC #obtain dsc
@@ -30,10 +30,21 @@ class TransmissionLine:
         self.impedance=self.calc_impedance() #get value of impedance
         self.admittance=self.calc_admittance() #get value of admittance
 
+        self.y_matrix = self.calc_y_matrix()
+
     def calc_impedance(self): #z'=R'+jwL'
         self.L=(2*(10**-7))*np.log(self.deq/self.dsl) #calculate distributed inductance in ohms/meter
-        return self.r + 1j*2*np.pi*60*self.L*1609 #calcualte distributed impedance, multiplied by 3.28 ft to convert from ohms/meter to ohms/feet
+        return self.r + 1j*2*np.pi*60*self.L*1609 #calcualte distributed impedance, converting to ohms/miles
 
     def calc_admittance(self):
         self.C=(2*np.pi*self.e_nought)/(np.log((self.deq/self.dsc))) #calculate distributed capacitance in ohms/meter
-        return 1j*2*np.pi*60*self.C*1609 #return distributed admittance converted to ohms/feet, conductance omitted
+        return 1j*2*np.pi*60*self.C*1609 #return distributed admittance converted to ohms/miles, conductance omitted
+
+    def calc_y_matrix(self):
+        y_matrix = np.zeros((2,2), dtype=complex) # initializing a 2x2 matrix of zeros
+        # creating admittance matrix (will need editing in future for the unknown admittances the buses connect to)
+        y_matrix[0,0] = self.admittance
+        y_matrix[0,1] = -self.admittance
+        y_matrix[1,0] = -self.admittance
+        y_matrix[1,1] = self.admittance
+        return y_matrix

@@ -1,0 +1,24 @@
+@startuml
+
+class Bus {
+    +name: str
+    +base_kv: float
+    +index: int
+ }
+
+class Conductor {
+    +name: str
+    +diam: float
+    +GMR: float
+    +resistance: float
+    +ampacity: float
+}
+
+class Geometry {
+    +name: str
+    +num_conductors: float
+    +spacing: float
+    +conductor: Conductor
+}
+Geometry "1" *-- "many" Conductor
+@enduml
