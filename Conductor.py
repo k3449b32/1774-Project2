@@ -9,3 +9,4 @@ class Conductor:
         self.GMR = GMR
         self.resistance = resistance
         self.ampacity = ampacity
+        self.radius = diam/24

@@ -19,25 +19,19 @@ class Circuit:
         self.transmissionlines = {}
 
     def add_Bus(self, name: str, bus_kv: float):
-        bus = Bus(name, bus_kv)
-        self.buses[bus.name] = bus
+        self.buses[name] = Bus(name, bus_kv)
 
     def add_Conductor(self, name: str, diam: float, GMR: float, resistance: float, ampacity: float):
-        conductor = Conductor(name, diam, GMR, resistance, ampacity)
-        self.conductors[conductor.name] = conductor
+        self.conductors[name] = Conductor(name, diam, GMR, resistance, ampacity)
 
     def add_Bundle(self, name: str, num_conductors: float, spacing: float, conductor: Conductor):
-        bundle = Bundle(name, num_conductors, spacing, conductor)
-        self.bundles[bundle.name] = bundle
+        self.bundles[name] = Bundle(name, num_conductors, spacing, conductor)
 
     def add_Geometry(self, name: str, xa: float, ya: float, xb: float, yb: float, xc: float, yc: float):
-        geometry = Geometry(name, xa, ya, xb, yb, xc, yc)
-        self.geometry[geometry.name] = geometry
+        self.geometry[name] = Geometry(name, xa, ya, xb, yb, xc, yc)
 
     def add_Transformer(self, name: str, bus1: Bus, bus2: Bus, power_rating: float, impedance_percent: float, x_over_r_ratio: float):
-        transformer = Transformer(name, bus1,bus2, power_rating, impedance_percent, x_over_r_ratio)
-        self.transformers[transformer.name] = transformer
+        self.transformers[name] = Transformer(name, bus1, bus2, power_rating, impedance_percent, x_over_r_ratio)
 
     def add_TransmissionLine(self, name: str, bus1: Bus, bus2: Bus, bundle: Bundle, geometry: Geometry, length: float):
-        transmissionline = TransmissionLine(name, bus1, bus2, bundle, geometry, length)
-        self.transmissionlines[transmissionline.name] = transmissionline
+        self.transmissionlines[name] = TransmissionLine(name, bus1, bus2, bundle, geometry, length)

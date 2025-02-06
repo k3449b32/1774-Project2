@@ -11,36 +11,20 @@ class Geometry:
         self.yb = yb
         self.xc = xc
         self.yc = yc
-        self.DEQ = self.Find_DEQ()
+        self.DEQ = self.calc_deq()
 
-    def Find_DEQ(self):
+    def calc_deq(self):
 
-        # Initializing distances between conductors
-        Dab = 0
-        Dbc = 0
-        Dac = 0
+        def calculate_distance(x1, y1, x2, y2):
+            if x1 == x2:
+                return abs(y1 - y2)
+            if y1 == y2:
+                return abs(x1 - x2)
+            return np.sqrt((y1 - y2) ** 2 + (x1 - x2) ** 2)
 
-        # Calculating the distances between conductors
-        if self.xa == self.xb:
-            Dab = abs(self.ya - self.yb)
-        if self.ya == self.yb:
-            Dab = abs(self.xa - self.xb)
-        else:
-            Dab = np.sqrt((self.ya - self.yb)**2 + (self.xa - self.xb)**2)
-
-        if self.xb == self.xc:
-            Dbc = abs(self.yb - self.yc)
-        if self.yb == self.yc:
-            Dbc = abs(self.xb - self.xc)
-        else:
-            Dbc = np.sqrt((self.yb - self.yc)**2 + (self.xb - self.xc)**2)
-
-        if self.xa == self.xc:
-            Dac = abs(self.ya - self.yc)
-        if self.ya == self.yb:
-            Dac = abs(self.xa - self.xc)
-        else:
-            Dac = np.sqrt((self.ya - self.yc)**2 + (self.xa - self.xc)**2)
+        Dab = calculate_distance(self.xa, self.ya, self.xb, self.yb)
+        Dbc = calculate_distance(self.xb, self.yb, self.xc, self.yc)
+        Dac = calculate_distance(self.xa, self.ya, self.xc, self.yc)
 
         # Using the distances between conductors to calculate DEQ then returning the value
         DEQ = np.cbrt(Dab * Dbc * Dac)

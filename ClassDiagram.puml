@@ -16,9 +16,87 @@ class Conductor {
 
 class Geometry {
     +name: str
+    +xa: float
+    +ya: float
+    +xb: float
+    +yb: float
+    +xc: float
+    +yc: float
+    +DEQ: float
+    +calc_deq()
+}
+
+class Bundle {
+    +name: str
     +num_conductors: float
     +spacing: float
     +conductor: Conductor
+    +DSL: float
+    +DSC: float
+    +Find_DSL_DSC()
 }
-Geometry "1" *-- "many" Conductor
+
+class Transformer {
+    +name: str
+    +bus1: Bus
+    +bus2: Bus
+    +power_rating: float
+    +impedance_percent: float
+    +x_over_r_ratio: float
+    +impedance: float
+    +admittance: float
+    +y_matrix: Array [float]
+    +calc_impedance()
+    +calc_admittance()
+    +calc_y_matrix()
+}
+
+class TransmissionLine {
+    +name: str
+    +bus1: Bus
+    +bus2: Bus
+    +bundle: Bundle
+    +geometry: Geometry
+    +length: float
+    +e_nought: float
+    +r: float
+    +deq: float
+    +dsc: float
+    +dsl: float
+    +L: float
+    +C: float
+    +impedance: float
+    +calc_impedance()
+    +calc_admittance()
+    +calc_y_matrix()
+}
+class Circuit {
+    - name: str
+    - buses: dict
+    - conductors: dict
+    - bundles: dict
+    - geometry: dict
+    - transformers: dict
+    - transmissionlines: dict
+    + __init__(name: str)
+    + add_Bus(name: str, bus_kv: float)
+    + add_Conductor(name: str, diam: float, GMR: float, resistance: float, ampacity: float)
+    + add_Bundle(name: str, num_conductors: float, spacing: float, conductor: Conductor)
+    + add_Geometry(name: str, xa: float, ya: float, xb: float, yb: float, xc: float, yc: float)
+    + add_Transformer(name: str, bus1: Bus, bus2: Bus, power_rating: float, impedance_percent: float, x_over_r_ratio: float)
+    + add_TransmissionLine(name: str, bus1: Bus, bus2: Bus, bundle: Bundle, geometry: Geometry, length: float)
+}
+
+Circuit "1" *-- "many" Bus : contains
+Circuit "1" *-- "many" Conductor : contains
+Circuit "1" *-- "many" Bundle : contains
+Circuit "1" *-- "many" Geometry : contains
+Circuit "1" *-- "many" Transformer : contains
+Circuit "1" *-- "many" TransmissionLine : contains
+TransmissionLine "1" *-- "many" Bus : contains
+TransmissionLine "1" *-- "many" Conductor : contains
+TransmissionLine "1" *-- "many" Bundle : contains
+TransmissionLine "1" *-- "many" Geometry : contains
+Transformer "1" *-- "many" Bus : contains
+Bundle "1" *-- "many" Conductor : contains
 @enduml
