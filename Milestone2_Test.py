@@ -52,21 +52,22 @@ print(circuit1.geometry["Geometry 1"].name, circuit1.geometry["Geometry 1"].xa, 
       circuit1.geometry["Geometry 1"].yc, circuit1.geometry["Geometry 1"].DEQ)
     # Expected Output: "Geometry 1" 0 0 50 0 25 30 36.5467
 
-circuit1.add_Transformer('Transformer 1',circuit1.buses["Bus1"],circuit1.buses["Bus2"],500,2,3)
+circuit1.add_Transformer('Transformer 1',circuit1.buses["Bus1"].name,circuit1.buses["Bus2"].name,500,2,3)
 print(type(circuit1.transformers["Transformer 1"]))
-print(circuit1.transformers["Transformer 1"].name, circuit1.transformers["Transformer 1"].bus1.base_kv, circuit1.transformers["Transformer 1"].bus2.base_kv,
+print(circuit1.transformers["Transformer 1"].name, circuit1.buses[circuit1.transformers["Transformer 1"].bus1].name,
+      circuit1.buses[circuit1.transformers["Transformer 1"].bus2].name,
       circuit1.transformers["Transformer 1"].power_rating, circuit1.transformers["Transformer 1"].impedance_percent,
       circuit1.transformers["Transformer 1"].x_over_r_ratio, circuit1.transformers["Transformer 1"].impedance,
       circuit1.transformers["Transformer 1"].admittance, "\n", circuit1.transformers["Transformer 1"].y_matrix)
-    # Expected Output: "Transformer 1" 230 500 500 2 3 (0.006324+0.01897j) 0
+    # Expected Output: "Transformer 1" Bus1 Bus2 500 2 3 (0.006324+0.01897j) 0
     #  [[ 0 0]
     #  [0 0]]
 
-circuit1.add_TransmissionLine("Line 1", circuit1.buses["Bus2"],circuit1.buses["Bus3"], circuit1.bundles["Bundle 1"],
+circuit1.add_TransmissionLine("Line 1", circuit1.buses["Bus2"].name,circuit1.buses["Bus3"].name, circuit1.bundles["Bundle 1"],
                               circuit1.geometry["Geometry 1"], 300)
 print(type(circuit1.transmissionlines["Line 1"]))
-print(circuit1.transmissionlines["Line 1"].name, circuit1.transmissionlines["Line 1"].bus1.name,
-      circuit1.transmissionlines["Line 1"].bus2.name, circuit1.transmissionlines["Line 1"].bundle.name,
+print(circuit1.transmissionlines["Line 1"].name, circuit1.transmissionlines["Line 1"].bus1,
+      circuit1.transmissionlines["Line 1"].bus2, circuit1.transmissionlines["Line 1"].bundle.name,
       circuit1.transmissionlines["Line 1"].geometry.name, circuit1.transmissionlines["Line 1"].length,
       circuit1.transmissionlines["Line 1"].impedance, circuit1.transmissionlines["Line 1"].admittance,
       "\n", circuit1.transmissionlines["Line 1"].y_matrix)
