@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
-from Geometry import Geometry
-from Bus import Bus
-from TransmissionLine import TransmissionLine
-from Bundle import Bundle
-from Transformer import Transformer
-from Conductor import Conductor
+from geometry import Geometry
+from bus import Bus
+from transmission_line import TransmissionLine
+from bundle import Bundle
+from transformer import Transformer
+from conductor import Conductor
 
 class Circuit:
 

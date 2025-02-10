@@ -3,7 +3,7 @@ import pandas as pd
 
 class Bus:
 
-    counter = 1
+    counter = 0
 
     def __init__(self, name: str, base_kv: float):
         self.name = name

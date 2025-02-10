@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
-from Bus import Bus
+from bus import Bus
 
 class Transformer:
 
-    def __init__(self, name: str, bus1: str, bus2: str, power_rating: float, impedance_percent: float, x_over_r_ratio: float):
+    def __init__(self, name: str, bus1: Bus, bus2: Bus, power_rating: float, impedance_percent: float, x_over_r_ratio: float):
         self.name = name
         self.bus1 = bus1
         self.bus2 = bus2
@@ -29,7 +29,7 @@ class Transformer:
         y_matrix[1,0] = -self.admittance
         y_matrix[1,1] = self.admittance
         # Create DataFrame with custom indices and columns
-        df_y_matrix = pd.DataFrame(y_matrix, index=[self.bus1, self.bus2], columns=[self.bus1, self.bus2])
+        df_y_matrix = pd.DataFrame(y_matrix, index=[self.bus1.name, self.bus2.name], columns=[self.bus1.name, self.bus2.name])
 
         return df_y_matrix
 

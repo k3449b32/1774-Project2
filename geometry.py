@@ -16,10 +16,6 @@ class Geometry:
     def calc_deq(self):
 
         def calculate_distance(x1, y1, x2, y2):
-            if x1 == x2:
-                return abs(y1 - y2)
-            if y1 == y2:
-                return abs(x1 - x2)
             return np.sqrt((y1 - y2) ** 2 + (x1 - x2) ** 2)
 
         Dab = calculate_distance(self.xa, self.ya, self.xb, self.yb)
