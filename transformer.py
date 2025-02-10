@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from bus import Bus
+import config
 
 class Transformer:
 
@@ -15,8 +16,10 @@ class Transformer:
         self.admittance = self.calc_admittance()
         self.y_matrix = self.calc_y_matrix()
 
+        self.impedance_pu=(self.impedance_percent / 100)*(config.power_base/power_rating)
+
     def calc_impedance(self): #method to calculate impedance
-        return (self.impedance_percent / 100) * np.exp(1j * np.atan(self.x_over_r_ratio))
+        return self.impedance_pu * np.exp(1j * np.atan(self.x_over_r_ratio))
 
     def calc_admittance(self): #method to calculate admittance
         return 1/self.impedance

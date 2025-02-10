@@ -4,11 +4,11 @@ from conductor import Conductor
 from bundle import Bundle
 from geometry import Geometry
 from bus import Bus
+import config
 
 class TransmissionLine:
+    f = config.frequency  # obtain the frequency from config.py
 
-    z_base = 230**2/100
-    f = 60
 
     def __init__(self, name: str, bus1: Bus, bus2: Bus, bundle: Bundle, geometry: Geometry, length: float):
         self.name = name
@@ -18,11 +18,14 @@ class TransmissionLine:
         self.geometry = geometry
         self.length = length
 
+        z_base = 230 ** 2 / config.power_base #calculate the z_base, IDK how to get the voltage
+
+
         self.e_nought = 8.85*10**-12 #value of e nought
         self.r = self.bundle.conductor.resistance/self.bundle.num_conductors #obtain resistance of line, assuming ohms/mile
 
-        self.impedance=self.calc_impedance() # get value of impedance in ohms
-        self.shunt_admittance=self.calc_admittance() # get value of admittance in siemens
+        self.impedance=self.calc_impedance()/z_base # get value of impedance in ohms
+        self.shunt_admittance=self.calc_admittance()*z_base # get value of admittance in siemens
         self.series_admittance = 1/self.impedance
         self.y_matrix = self.calc_y_matrix() # automatically creating the admittance matrix
 
