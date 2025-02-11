@@ -10,7 +10,7 @@ class Bundle:
         self.spacing = spacing
         self.conductor = conductor
         # Automatically calling the method to calculate DSC and DSL
-        self.DSC, self.DSL = self.calc_dsl_dsc()
+        self.DSL, self.DSC = self.calc_dsl_dsc()
 
     def calc_dsl_dsc(self):
 

@@ -12,11 +12,10 @@ class Transformer:
         self.power_rating = power_rating
         self.impedance_percent = impedance_percent
         self.x_over_r_ratio = x_over_r_ratio
+        self.impedance_pu = (self.impedance_percent / 100) * (config.power_base / power_rating)
         self.impedance = self.calc_impedance()
         self.admittance = self.calc_admittance()
         self.y_matrix = self.calc_y_matrix()
-
-        self.impedance_pu=(self.impedance_percent / 100)*(config.power_base/power_rating)
 
     def calc_impedance(self): #method to calculate impedance
         return self.impedance_pu * np.exp(1j * np.atan(self.x_over_r_ratio))

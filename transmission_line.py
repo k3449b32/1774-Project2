@@ -31,7 +31,7 @@ class TransmissionLine:
 
     def calc_impedance(self): #z'=R'+jwL'
         L = (2*(10**-7))*np.log(self.geometry.DEQ / self.bundle.DSL) #calculate distributed inductance in Henrys/meter
-        return self.r + 1j*2*np.pi*TransmissionLine.f*L*1609 * self.length #calcualte distributed impedance, converting to ohms/miles
+        return (self.r + 1j*2*np.pi*TransmissionLine.f*L*1609) * self.length #calcualte distributed impedance, converting to ohms/miles
 
     def calc_admittance(self):
         C = (2*np.pi*self.e_nought)/(np.log((self.geometry.DEQ / self.bundle.DSC))) #calculate distributed capacitance in Farads/meter
