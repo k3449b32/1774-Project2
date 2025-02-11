@@ -18,22 +18,40 @@ class Circuit:
         self.bundles = {}
         self.geometry = {}
         self.transformers = {}
-        self.transmissionlines = {}
+        self.transmission_lines = {}
 
-    def add_Bus(self, name: str, bus_kv: float):
-        self.buses[name] = Bus(name, bus_kv)
+    def add_bus(self, name: str, bus_kv: float):
+        if name in self.buses:
+            raise ValueError("Bus is already in circuit")
+        else:
+            self.buses[name] = Bus(name, bus_kv)
 
-    def add_Conductor(self, name: str, diam: float, GMR: float, resistance: float, ampacity: float):
-        self.conductors[name] = Conductor(name, diam, GMR, resistance, ampacity)
+    def add_conductor(self, name: str, diam: float, GMR: float, resistance: float, ampacity: float):
+        if name in self.conductors:
+            raise ValueError("Conductor is already in circuit")
+        else:
+            self.conductors[name] = Conductor(name, diam, GMR, resistance, ampacity)
 
-    def add_Bundle(self, name: str, num_conductors: float, spacing: float, conductor: Conductor):
-        self.bundles[name] = Bundle(name, num_conductors, spacing, conductor)
+    def add_bundle(self, name: str, num_conductors: float, spacing: float, conductor: Conductor):
+        if name in self.bundles:
+            raise ValueError("Bundle is already in circuit")
+        else:
+            self.bundles[name] = Bundle(name, num_conductors, spacing, conductor)
 
-    def add_Geometry(self, name: str, xa: float, ya: float, xb: float, yb: float, xc: float, yc: float):
-        self.geometry[name] = Geometry(name, xa, ya, xb, yb, xc, yc)
+    def add_geometry(self, name: str, xa: float, ya: float, xb: float, yb: float, xc: float, yc: float):
+        if name in self.geometry:
+            raise ValueError("Geometry is already in circuit")
+        else:
+            self.geometry[name] = Geometry(name, xa, ya, xb, yb, xc, yc)
 
-    def add_Transformer(self, name: str, bus1: Bus, bus2: Bus, power_rating: float, impedance_percent: float, x_over_r_ratio: float):
-        self.transformers[name] = Transformer(name, bus1, bus2, power_rating, impedance_percent, x_over_r_ratio)
+    def add_transformer(self, name: str, bus1: Bus, bus2: Bus, power_rating: float, impedance_percent: float, x_over_r_ratio: float):
+        if name in self.transformers:
+            raise ValueError("Transformer is already in circuit")
+        else:
+            self.transformers[name] = Transformer(name, bus1, bus2, power_rating, impedance_percent, x_over_r_ratio)
 
-    def add_TransmissionLine(self, name: str, bus1: Bus, bus2: Bus, bundle: Bundle, geometry: Geometry, length: float):
-        self.transmissionlines[name] = TransmissionLine(name, bus1, bus2, bundle, geometry, length)
+    def add_transmission_line(self, name: str, bus1: Bus, bus2: Bus, bundle: Bundle, geometry: Geometry, length: float):
+        if name in self.transmission_lines:
+            raise ValueError("Transmission Line is already in circuit")
+        else:
+            self.transmission_lines[name] = TransmissionLine(name, bus1, bus2, bundle, geometry, length)
