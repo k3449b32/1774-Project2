@@ -19,8 +19,8 @@ print(circuit1.geometry) # Expected output: {}
 print(type(circuit1.geometry)) # Expected output: <class ‘dict’>
 print(circuit1.transformers) # Expected output: {}
 print(type(circuit1.transformers)) # Expected output: <class ‘dict’>
-print(circuit1.transmissionlines) # Expected output: {}
-print(type(circuit1.transmissionlines)) # Expected output: <class ‘dict’>
+print(circuit1.transmission_lines) # Expected output: {}
+print(type(circuit1.transmission_lines)) # Expected output: <class ‘dict’>
 
 # Testing the circuit classes add and retrieve methods
 circuit1.add_bus("Bus1", 230)
@@ -65,17 +65,17 @@ print(circuit1.transformers["Transformer 1"].name, circuit1.buses[circuit1.trans
 
 circuit1.add_transmission_line("Line 1", circuit1.buses["Bus2"],circuit1.buses["Bus3"], circuit1.bundles["Bundle 1"],
                               circuit1.geometry["Geometry 1"], 300)
-print("\n", type(circuit1.transmissionlines["Line 1"]))
-print(circuit1.transmissionlines["Line 1"].name, circuit1.transmissionlines["Line 1"].bus1.name,
-      circuit1.transmissionlines["Line 1"].bus2.name, circuit1.transmissionlines["Line 1"].bundle.name,
-      circuit1.transmissionlines["Line 1"].geometry.name, circuit1.transmissionlines["Line 1"].length,
-      circuit1.transmissionlines["Line 1"].impedance, circuit1.transmissionlines["Line 1"].shunt_admittance,
-      "\n", circuit1.transmissionlines["Line 1"].y_matrix)
+print("\n", type(circuit1.transmission_lines["Line 1"]))
+print(circuit1.transmission_lines["Line 1"].name, circuit1.transmission_lines["Line 1"].bus1.name,
+      circuit1.transmission_lines["Line 1"].bus2.name, circuit1.transmission_lines["Line 1"].bundle.name,
+      circuit1.transmission_lines["Line 1"].geometry.name, circuit1.transmission_lines["Line 1"].length,
+      circuit1.transmission_lines["Line 1"].impedance, circuit1.transmission_lines["Line 1"].shunt_admittance,
+      "\n", circuit1.transmission_lines["Line 1"].y_matrix)
     # Expected Output: Line 1 Bus2 Bus3 Bundle 1 Geometry 1 300 (57.75+236.5265215380633j) 0.0015824780682032612j
     #  0.142692 - 0.391017j  -0.142692 + 0.490974j
     # -0.142692 + 0.490974j   0.142692 - 0.391017j
 
 # Print all added components through the circuit class
-print("\n", list(circuit1.buses.keys()),list(circuit1.conductors.keys()),list(circuit1.bundles.keys()),
-      list(circuit1.geometry.keys()),list(circuit1.transformers.keys()),list(circuit1.transmissionlines.keys()))
+print("\n", list(circuit1.buses.keys()), list(circuit1.conductors.keys()), list(circuit1.bundles.keys()),
+      list(circuit1.geometry.keys()), list(circuit1.transformers.keys()), list(circuit1.transmission_lines.keys()))
     # Expected Output: ['Bus1', 'Bus2', 'Bus3'] ['Partridge'] ['Bundle 1'] ['Geometry 1'] ['Transformer 1'] ['Line 1']
