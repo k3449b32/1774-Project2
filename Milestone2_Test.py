@@ -63,8 +63,8 @@ print(circuit1.transformers["Transformer 1"].name, circuit1.buses[circuit1.trans
     #  15.811388 - 47.434165j  -15.811388 + 47.434165j
     # -15.811388 + 47.434165j   15.811388 - 47.434165j
 
-circuit1.add_transmission_line("Line 1", circuit1.buses["Bus2"].name,circuit1.buses["Bus3"].name, circuit1.bundles["Bundle 1"],
-                              circuit1.geometry["Geometry 1"], 300)
+circuit1.add_transmission_line("Line 1", circuit1.buses["Bus2"].name,circuit1.buses["Bus3"].name, circuit1.bundles["Bundle 1"].name,
+                              circuit1.geometry["Geometry 1"].name, 300)
 print("\n", type(circuit1.transmission_lines["Line 1"]))
 print(circuit1.transmission_lines["Line 1"].name, circuit1.transmission_lines["Line 1"].bus1.name,
       circuit1.transmission_lines["Line 1"].bus2.name, circuit1.transmission_lines["Line 1"].bundle.name,
