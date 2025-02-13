@@ -1,7 +1,8 @@
-from geometry import Geometry
-from bus import Bus
-from transmission_line import TransmissionLine
-from bundle import Bundle
-from transformer import Transformer
-from conductor import Conductor
+from circuit import Circuit
 
+circuit1 = Circuit("circuit1")
+circuit1.add_bus("Bus1", 230)
+circuit1.add_bus("Bus2", 500)
+circuit1.add_transformer("T1", circuit1.buses["Bus1"].name, circuit1.buses["Bus2"].name, 125, 8.5, 10)
+print(circuit1.transformers["T1"].impedance_pu, circuit1.transformers["T1"].admittance)
+print(circuit1.transformers["T1"].y_matrix())
