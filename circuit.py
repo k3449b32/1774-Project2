@@ -32,11 +32,11 @@ class Circuit:
         else:
             self.conductors[name] = Conductor(name, diam, GMR, resistance, ampacity)
 
-    def add_bundle(self, name: str, num_conductors: float, spacing: float, conductor: Conductor):
+    def add_bundle(self, name: str, num_conductors: float, spacing: float, conductor: str):
         if name in self.bundles:
             raise ValueError("Bundle is already in circuit")
         else:
-            self.bundles[name] = Bundle(name, num_conductors, spacing, conductor)
+            self.bundles[name] = Bundle(name, num_conductors, spacing, self.conductors[conductor])
 
     def add_geometry(self, name: str, xa: float, ya: float, xb: float, yb: float, xc: float, yc: float):
         if name in self.geometry:
@@ -48,7 +48,6 @@ class Circuit:
         if name in self.transformers:
             raise ValueError("Transformer is already in circuit")
         else:
-
             self.transformers[name] = Transformer(name, self.buses[bus1], self.buses[bus2], power_rating, impedance_percent, x_over_r_ratio)
 
     def add_transmission_line(self, name: str, bus1: str, bus2: str, bundle: Bundle, geometry: Geometry, length: float):

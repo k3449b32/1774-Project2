@@ -39,7 +39,7 @@ print(circuit1.conductors["Partridge"].name, circuit1.conductors["Partridge"].di
       circuit1.conductors["Partridge"].resistance, circuit1.conductors["Partridge"].ampacity)
     # Expected output: "Partridge" 0.642 0.0217 0.385 460
 
-circuit1.add_bundle("Bundle 1", 2, 1.5, circuit1.conductors["Partridge"])
+circuit1.add_bundle("Bundle 1", 2, 1.5, circuit1.conductors["Partridge"].name)
 print("\n", type(circuit1.bundles["Bundle 1"]))
 print(circuit1.bundles["Bundle 1"].name, circuit1.bundles["Bundle 1"].num_conductors, circuit1.bundles["Bundle 1"].spacing,
       circuit1.bundles["Bundle 1"].conductor.name, circuit1.bundles["Bundle 1"].DSL, circuit1.bundles["Bundle 1"].DSC)
@@ -52,7 +52,7 @@ print(circuit1.geometry["Geometry 1"].name, circuit1.geometry["Geometry 1"].xa, 
       circuit1.geometry["Geometry 1"].yc, circuit1.geometry["Geometry 1"].DEQ)
     # Expected Output: "Geometry 1" 0 0 50 0 25 30 42.40463044244056
 
-circuit1.add_transformer('Transformer 1',circuit1.buses["Bus1"],circuit1.buses["Bus2"],500,2,3)
+circuit1.add_transformer('Transformer 1',circuit1.buses["Bus1"].name,circuit1.buses["Bus2"].name,500,2,3)
 print("\n", type(circuit1.transformers["Transformer 1"]))
 print(circuit1.transformers["Transformer 1"].name, circuit1.buses[circuit1.transformers["Transformer 1"].bus1.name].name,
       circuit1.buses[circuit1.transformers["Transformer 1"].bus2.name].name,
@@ -63,7 +63,7 @@ print(circuit1.transformers["Transformer 1"].name, circuit1.buses[circuit1.trans
     #  15.811388 - 47.434165j  -15.811388 + 47.434165j
     # -15.811388 + 47.434165j   15.811388 - 47.434165j
 
-circuit1.add_transmission_line("Line 1", circuit1.buses["Bus2"],circuit1.buses["Bus3"], circuit1.bundles["Bundle 1"],
+circuit1.add_transmission_line("Line 1", circuit1.buses["Bus2"].name,circuit1.buses["Bus3"].name, circuit1.bundles["Bundle 1"],
                               circuit1.geometry["Geometry 1"], 300)
 print("\n", type(circuit1.transmission_lines["Line 1"]))
 print(circuit1.transmission_lines["Line 1"].name, circuit1.transmission_lines["Line 1"].bus1.name,
