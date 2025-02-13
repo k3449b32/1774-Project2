@@ -15,3 +15,6 @@ circuit1.add_transmission_line("Line 1", circuit1.buses["Bus1"].name, circuit1.b
                                circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 10)
 print("\nImpedance pu: ", circuit1.transmission_lines["Line 1"].impedance_pu, "Series Admittance pu: ", circuit1.transmission_lines["Line 1"].series_admittance,
       "\nShunt Admittance pu: ", circuit1.transmission_lines["Line 1"].shunt_admittance, "\n",circuit1.transmission_lines["Line 1"].y_matrix)
+
+circuit1.calc_ybus()
+print("\n",circuit1.ybus)
