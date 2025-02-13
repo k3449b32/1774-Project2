@@ -50,8 +50,8 @@ class Circuit:
         else:
             self.transformers[name] = Transformer(name, self.buses[bus1], self.buses[bus2], power_rating, impedance_percent, x_over_r_ratio)
 
-    def add_transmission_line(self, name: str, bus1: str, bus2: str, bundle: Bundle, geometry: Geometry, length: float):
+    def add_transmission_line(self, name: str, bus1: str, bus2: str, bundle: str, geometry: str, length: float):
         if name in self.transmission_lines:
             raise ValueError("Transmission Line is already in circuit")
         else:
-            self.transmission_lines[name] = TransmissionLine(name, self.buses[bus1], self.buses[bus2], bundle, geometry, length)
+            self.transmission_lines[name] = TransmissionLine(name, self.buses[bus1], self.buses[bus2], self.bundles[bundle], self.geometry[geometry], length)

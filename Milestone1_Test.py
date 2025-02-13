@@ -29,6 +29,6 @@ print(transformer1.y_matrix)
 
 line1 = TransmissionLine("Line 1", bus1, bus2, bundle1, geometry1, 10)
 print("\nValidating Transmission Line Class: ", line1.name, line1.bus1.name, line1.bus2.name, line1.length)
-print(line1.impedance, line1.shunt_admittance)
+print(line1.impedance_pu, line1.shunt_admittance)
 print(line1.y_matrix)
 

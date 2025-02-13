@@ -23,9 +23,9 @@ class TransmissionLine:
         self.e_nought = 8.85*10**-12 #value of e nought
         self.r = self.bundle.conductor.resistance/self.bundle.num_conductors #obtain resistance of line, assuming ohms/mile
 
-        self.impedance=self.calc_impedance()/z_base # get value of impedance in ohms
-        self.shunt_admittance=self.calc_admittance()*z_base # get value of admittance in siemens
-        self.series_admittance = 1/self.impedance
+        self.impedance_pu = self.calc_impedance() / z_base # get value of impedance in ohms
+        self.shunt_admittance = self.calc_admittance()*z_base # get value of admittance in siemens
+        self.series_admittance = 1/self.impedance_pu
         self.y_matrix = self.calc_y_matrix() # automatically creating the admittance matrix
 
     def calc_impedance(self): #z'=R'+jwL'

@@ -57,7 +57,7 @@ print("\n", type(circuit1.transformers["Transformer 1"]))
 print(circuit1.transformers["Transformer 1"].name, circuit1.buses[circuit1.transformers["Transformer 1"].bus1.name].name,
       circuit1.buses[circuit1.transformers["Transformer 1"].bus2.name].name,
       circuit1.transformers["Transformer 1"].power_rating, circuit1.transformers["Transformer 1"].impedance_percent,
-      circuit1.transformers["Transformer 1"].x_over_r_ratio, circuit1.transformers["Transformer 1"].impedance,
+      circuit1.transformers["Transformer 1"].x_over_r_ratio, circuit1.transformers["Transformer 1"].impedance_pu,
       circuit1.transformers["Transformer 1"].admittance, "\n", circuit1.transformers["Transformer 1"].y_matrix)
     # Expected Output: "Transformer 1" Bus1 Bus2 500 2 3 (0.006324+0.01897j) 0
     #  15.811388 - 47.434165j  -15.811388 + 47.434165j
@@ -69,7 +69,7 @@ print("\n", type(circuit1.transmission_lines["Line 1"]))
 print(circuit1.transmission_lines["Line 1"].name, circuit1.transmission_lines["Line 1"].bus1.name,
       circuit1.transmission_lines["Line 1"].bus2.name, circuit1.transmission_lines["Line 1"].bundle.name,
       circuit1.transmission_lines["Line 1"].geometry.name, circuit1.transmission_lines["Line 1"].length,
-      circuit1.transmission_lines["Line 1"].impedance, circuit1.transmission_lines["Line 1"].shunt_admittance,
+      circuit1.transmission_lines["Line 1"].impedance_pu, circuit1.transmission_lines["Line 1"].shunt_admittance,
       "\n", circuit1.transmission_lines["Line 1"].y_matrix)
     # Expected Output: Line 1 Bus2 Bus3 Bundle 1 Geometry 1 300 (57.75+236.5265215380633j) 0.0015824780682032612j
     #  0.142692 - 0.391017j  -0.142692 + 0.490974j
