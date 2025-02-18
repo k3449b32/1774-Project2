@@ -24,7 +24,7 @@ print(bundle1.DSC, bundle1.DSL)
 
 transformer1 = Transformer('transformer1',bus1,bus3,500,2,3)
 print("\nValidating Transformer Class: ", transformer1.name, transformer1.bus1.name, transformer1.bus2.name, transformer1.power_rating)
-print(transformer1.impedance,transformer1.admittance)
+print(transformer1.zseries, transformer1.yseries)
 print(transformer1.y_matrix)
 
 line1 = TransmissionLine("Line 1", bus1, bus2, bundle1, geometry1, 10)

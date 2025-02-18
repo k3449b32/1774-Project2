@@ -58,7 +58,7 @@ print(circuit1.transformers["Transformer 1"].name, circuit1.buses[circuit1.trans
       circuit1.buses[circuit1.transformers["Transformer 1"].bus2.name].name,
       circuit1.transformers["Transformer 1"].power_rating, circuit1.transformers["Transformer 1"].impedance_percent,
       circuit1.transformers["Transformer 1"].x_over_r_ratio, circuit1.transformers["Transformer 1"].impedance_pu,
-      circuit1.transformers["Transformer 1"].admittance, "\n", circuit1.transformers["Transformer 1"].y_matrix)
+      circuit1.transformers["Transformer 1"].yseries, "\n", circuit1.transformers["Transformer 1"].y_matrix)
     # Expected Output: "Transformer 1" Bus1 Bus2 500 2 3 (0.006324+0.01897j) 0
     #  15.811388 - 47.434165j  -15.811388 + 47.434165j
     # -15.811388 + 47.434165j   15.811388 - 47.434165j
