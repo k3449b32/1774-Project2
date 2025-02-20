@@ -26,21 +26,37 @@ circuit1.add_transformer("T1", circuit1.buses["Bus1"].name, circuit1.buses["Bus2
 circuit1.add_transformer("T2", circuit1.buses["Bus6"].name, circuit1.buses["Bus7"].name, 200, 10.5, 12)
 
 # Printing the values for the transformers
-print("Impedance pu: ", circuit1.transformers["T1"].zseries, "Admittance: ", circuit1.transformers["T1"].yseries)
+print("T1 Impedance pu: ", circuit1.transformers["T1"].zseries, "Admittance: ", circuit1.transformers["T1"].yseries)
 print(circuit1.transformers["T1"].y_matrix)
-print("Impedance pu: ", circuit1.transformers["T2"].zseries, "Admittance: ", circuit1.transformers["T2"].yseries)
+print("T2 Impedance pu: ", circuit1.transformers["T2"].zseries, "Admittance: ", circuit1.transformers["T2"].yseries)
 print(circuit1.transformers["T2"].y_matrix)
 
 # Creating the T-Lines used in the circuit
 circuit1.add_transmission_line("Line 1", circuit1.buses["Bus2"].name, circuit1.buses["Bus4"].name,
                                circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 10)
 circuit1.add_transmission_line("Line 2", circuit1.buses["Bus2"].name, circuit1.buses["Bus3"].name,
-                               circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 10)
+                               circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 25)
 circuit1.add_transmission_line("Line 3", circuit1.buses["Bus3"].name, circuit1.buses["Bus5"].name,
-                               circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 10)
+                               circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 20)
 circuit1.add_transmission_line("Line 4", circuit1.buses["Bus4"].name, circuit1.buses["Bus6"].name,
-                               circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 10)
+                               circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 20)
 circuit1.add_transmission_line("Line 5", circuit1.buses["Bus5"].name, circuit1.buses["Bus6"].name,
                                circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 10)
 circuit1.add_transmission_line("Line 6", circuit1.buses["Bus4"].name, circuit1.buses["Bus5"].name,
-                               circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 10)
+                               circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 35)
+
+print("\nLine 1 Impedance pu: ", circuit1.transmission_lines["Line 1"].impedance_pu, "Series Admittance pu: ", circuit1.transmission_lines["Line 1"].series_admittance,
+      "\nShunt Admittance pu: ", circuit1.transmission_lines["Line 1"].shunt_admittance, "\n",circuit1.transmission_lines["Line 1"].y_matrix)
+print("\nLine 2 Impedance pu: ", circuit1.transmission_lines["Line 2"].impedance_pu, "Series Admittance pu: ", circuit1.transmission_lines["Line 2"].series_admittance,
+      "\nShunt Admittance pu: ", circuit1.transmission_lines["Line 2"].shunt_admittance, "\n",circuit1.transmission_lines["Line 2"].y_matrix)
+print("\nLine 3 Impedance pu: ", circuit1.transmission_lines["Line 3"].impedance_pu, "Series Admittance pu: ", circuit1.transmission_lines["Line 3"].series_admittance,
+      "\nShunt Admittance pu: ", circuit1.transmission_lines["Line 3"].shunt_admittance, "\n",circuit1.transmission_lines["Line 3"].y_matrix)
+print("\nLine 4 Impedance pu: ", circuit1.transmission_lines["Line 4"].impedance_pu, "Series Admittance pu: ", circuit1.transmission_lines["Line 4"].series_admittance,
+      "\nShunt Admittance pu: ", circuit1.transmission_lines["Line 4"].shunt_admittance, "\n",circuit1.transmission_lines["Line 4"].y_matrix)
+print("\nLine 5 Impedance pu: ", circuit1.transmission_lines["Line 5"].impedance_pu, "Series Admittance pu: ", circuit1.transmission_lines["Line 5"].series_admittance,
+      "\nShunt Admittance pu: ", circuit1.transmission_lines["Line 5"].shunt_admittance, "\n",circuit1.transmission_lines["Line 5"].y_matrix)
+print("\nLine 6 Impedance pu: ", circuit1.transmission_lines["Line 6"].impedance_pu, "Series Admittance pu: ", circuit1.transmission_lines["Line 6"].series_admittance,
+      "\nShunt Admittance pu: ", circuit1.transmission_lines["Line 6"].shunt_admittance, "\n",circuit1.transmission_lines["Line 6"].y_matrix)
+
+circuit1.calc_ybus()
+print("\n",circuit1.ybus)
