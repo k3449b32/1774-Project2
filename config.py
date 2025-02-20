@@ -1,3 +1,3 @@
 #config
-power_base=500
-frequency=60
+power_base=100
+f=60
