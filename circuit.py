@@ -96,8 +96,9 @@ class Circuit:
 
         # Now, the Ybus is stored as a pandas DataFrame with proper bus names
 
-        # Making sure it shows all of the rows and columns
+        # Making sure it shows all of the rows and columns properly
         pd.set_option('display.max_rows', None)  # No limit to the number of rows displayed
         pd.set_option('display.max_columns', None)  # No limit to the number of columns displayed
         pd.set_option('display.width', None)  # No width limit (adjust to your console's width)
         pd.set_option('display.max_colwidth', None)  # No limit to the column width
+        self.ybus = self.ybus.round(2)
