@@ -4,10 +4,10 @@ from conductor import Conductor
 from bundle import Bundle
 from geometry import Geometry
 from bus import Bus
-import config
+from settings import Settings
 
 class TransmissionLine:
-    f = config.frequency  # obtain the frequency from config.py
+    f = Settings.frequency  # obtain the frequency from settings.py
 
 
     def __init__(self, name: str, bus1: Bus, bus2: Bus, bundle: Bundle, geometry: Geometry, length: float):
@@ -18,7 +18,7 @@ class TransmissionLine:
         self.geometry = geometry
         self.length = length
 
-        z_base = self.bus1.base_kv ** 2 / config.power_base #calculate the z_base, IDK how to get the voltage
+        z_base = self.bus1.base_kv ** 2 / Settings.base_power #calculate the z_base, IDK how to get the voltage
 
         self.e_nought = 8.85*10**-12 #value of e nought
         self.r = self.bundle.conductor.resistance/self.bundle.num_conductors #obtain resistance of line, assuming ohms/mile

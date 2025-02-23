@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from bus import Bus
-import config
+from settings import Settings
 
 class Transformer:
 
