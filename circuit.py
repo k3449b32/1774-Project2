@@ -23,7 +23,7 @@ class Circuit:
         if name in self.buses:
             raise ValueError("Bus is already in circuit")
         else:
-            self.buses[name] = Bus(name, bus_kv, 0, 0, 0)
+            self.buses[name] = Bus(name, bus_kv)
 
     def add_conductor(self, name: str, diam: float, GMR: float, resistance: float, ampacity: float):
         if name in self.conductors:

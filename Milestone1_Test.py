@@ -12,9 +12,9 @@ print("Validating Conductor Class: ", conductor1.name, conductor1.diam, conducto
 geometry1 = Geometry("test", 0, 0, 50, 0, 25, 30)
 print("\nValidating Geometry Class: ", geometry1.DEQ)
 
-bus1 = Bus('bus1', 245, 0, 0, 0)
-bus2 = Bus('bus2', 245, 0, 0, 0)
-bus3 = Bus('bus3', 280, 0, 0, 0)
+bus1 = Bus('bus1', 245)
+bus2 = Bus('bus2', 245)
+bus3 = Bus('bus3', 280)
 print("\nValidating Bus Class: ", bus1.name,bus1.base_kv,bus1.index,
       bus2.name,bus2.base_kv,bus2.index,bus3.name,bus3.base_kv,bus3.index)
 

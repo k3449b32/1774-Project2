@@ -6,19 +6,22 @@ class Bus:
     counter = 0
     ACCEPTABLE_BUS_TYPES = ['Slack', 'PQ', 'PV']
 
-    def __init__(self, name: str, base_kv: float, bus_type: str, vpu: float = 1.0, delta: float = 0.0):
+    def __init__(self, name: str, base_kv: float):
 
-        # Ensure bus_type is valid
-        if bus_type not in Bus.ACCEPTABLE_BUS_TYPES:
-            raise ValueError(f"Invalid bus type '{bus_type}'. Acceptable types are {Bus.ACCEPTABLE_BUS_TYPES}.")
-        self.bus_type = bus_type
 
-        self.bus_type = bus_type
+
+
+
+        self.bus_type = 'PQ' #set bus type to PQ
+        if self.bus_type not in Bus.ACCEPTABLE_BUS_TYPES:
+            raise ValueError(f"Invalid bus type '{self.bus_type}'. Acceptable types are {Bus.ACCEPTABLE_BUS_TYPES}.")
+
+        #obtain, name, base voltage
         self.name = name
         self.base_kv = base_kv
-        self.vpu = vpu
+        self.vpu = 1.0 #initialize vpu to 1
         self.float=float
-        self.delta=delta
+        self.delta=0 #initialize phase angle to 0
         # Keeping an index of all bus instances
         self.index = Bus.counter
         Bus.counter += 1
