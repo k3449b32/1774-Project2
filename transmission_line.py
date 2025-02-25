@@ -30,11 +30,11 @@ class TransmissionLine:
 
     def calc_impedance(self): #z'=R'+jwL'
         L = (2*(10**-7))*np.log(self.geometry.DEQ / self.bundle.DSL) #calculate distributed inductance in Henrys/meter
-        return (self.r + 1j*2*np.pi*config.f*L*1609) * self.length #calcualte distributed impedance, converting to ohms/miles
+        return (self.r + 1j*2*np.pi*settings.f*L*1609.34) * self.length #calcualte distributed impedance, converting to ohms/miles
 
     def calc_admittance(self):
         C = (2*np.pi*self.e_nought)/(np.log((self.geometry.DEQ / self.bundle.DSC))) #calculate distributed capacitance in Farads/meter
-        return 1j*2*np.pi*config.f*C*1609 * self.length #return distributed admittance converted to siemens/miles, conductance omitted
+        return (1j*2*np.pi*settings.f*C*1609.34) * self.length #return distributed admittance converted to siemens/miles, conductance omitted
 
     def calc_y_matrix(self):
         y_matrix = np.zeros((2,2), dtype=complex) # initializing a 2x2 matrix of zeros
