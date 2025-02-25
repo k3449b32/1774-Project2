@@ -20,7 +20,7 @@ class Bus:
         self.name = name
         self.base_kv = base_kv
         self.vpu = 1.0 #initialize vpu to 1
-        self.float=float
+
         self.delta=0 #initialize phase angle to 0
         # Keeping an index of all bus instances
         self.index = Bus.counter
