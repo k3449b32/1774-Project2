@@ -18,7 +18,7 @@ class Transformer:
         self.y_matrix = self.calc_y_matrix()
 
     def calc_impedance(self): #method to calculate impedance
-        zpu = self.impedance_percent/100 * np.exp(1j * np.atan(self.x_over_r_ratio)) * config.power_base/self.power_rating
+        zpu = self.impedance_percent/100 * np.exp(1j * np.atan(self.x_over_r_ratio)) * Settings.base_power/self.power_rating
         return zpu
 
     def calc_admittance(self): #method to calculate admittance
