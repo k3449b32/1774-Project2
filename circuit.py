@@ -21,10 +21,11 @@ class Circuit:
         self.transmission_lines = {}
         self.loads = {}
         self.generators = {}
-        self.bus_type = {}
         self.ybus = None
         self.first_gen = False
         self.bus_order = []
+        self.real_power = {}
+        self.reactive_power = {}
 
     def add_bus(self, name: str, bus_kv: float):
         if name in self.buses:
@@ -32,7 +33,6 @@ class Circuit:
         else:
             self.buses[name] = Bus(name, bus_kv)
             self.bus_order.append(name)
-            self.bus_type[name] = 'PQ'
         self.calc_ybus()
 
     def add_conductor(self, name: str, diam: float, GMR: float, resistance: float, ampacity: float):
@@ -70,7 +70,10 @@ class Circuit:
     def add_load_element(self, name: str, bus: str, real_power: float, reactive_power: float):
         if name in self.loads:
             raise ValueError("Load is already in circuit")
-        self.loads[name] = Load(name, self.buses[bus], real_power, reactive_power)
+        else:
+            self.loads[name] = Load(name, self.buses[bus], real_power, reactive_power)
+            self.real_power[bus] -= real_power
+            self.reactive_power[bus] -= reactive_power
         self.calc_ybus()
 
 
@@ -78,13 +81,14 @@ class Circuit:
         if name in self.generators:
             raise ValueError("Generator is already in circuit")
         self.generators[name] = Generator(name, self.buses[bus], real_power, per_unit_voltage)
+        self.real_power[bus] += real_power
         # If there is no generator made the first generator is a slack generator and the boolean variable changes
         if not self.first_gen:
             self.first_gen = True
-            self.bus_type[bus] = 'slack'
+            self.buses[bus] = 'slack'
         # If there already is a generator in the circuit then the next generator is created as PV
         else:
-            self.bus_type[bus] = 'PV'
+            self.buses[bus] = 'PV'
         self.calc_ybus()
 
     def calc_ybus(self):
