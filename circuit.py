@@ -24,12 +24,16 @@ class Circuit:
         self.bus_type = {}
         self.ybus = None
         self.first_gen = False
+        self.bus_order = []
 
     def add_bus(self, name: str, bus_kv: float):
         if name in self.buses:
             raise ValueError("Bus is already in circuit")
         else:
             self.buses[name] = Bus(name, bus_kv)
+            self.bus_order.append(name)
+            self.bus_type[name] = 'PQ'
+        self.calc_ybus()
 
     def add_conductor(self, name: str, diam: float, GMR: float, resistance: float, ampacity: float):
         if name in self.conductors:
@@ -54,17 +58,20 @@ class Circuit:
             raise ValueError("Transformer is already in circuit")
         else:
             self.transformers[name] = Transformer(name, self.buses[bus1], self.buses[bus2], power_rating, impedance_percent, x_over_r_ratio)
+        self.calc_ybus()
 
     def add_transmission_line(self, name: str, bus1: str, bus2: str, bundle: str, geometry: str, length: float):
         if name in self.transmission_lines:
             raise ValueError("Transmission Line is already in circuit")
         else:
             self.transmission_lines[name] = TransmissionLine(name, self.buses[bus1], self.buses[bus2], self.bundles[bundle], self.geometry[geometry], length)
+        self.calc_ybus()
 
     def add_load_element(self, name: str, bus: str, real_power: float, reactive_power: float):
         if name in self.loads:
             raise ValueError("Load is already in circuit")
         self.loads[name] = Load(name, self.buses[bus], real_power, reactive_power)
+        self.calc_ybus()
 
 
     def add_generator_element(self, name: str, bus: str, real_power: float, per_unit_voltage: float):
@@ -78,6 +85,7 @@ class Circuit:
         # If there already is a generator in the circuit then the next generator is created as PV
         else:
             self.bus_type[bus] = 'PV'
+        self.calc_ybus()
 
     def calc_ybus(self):
         # Step 1: Initialize the Ybus matrix as a zero matrix with dimensions N x N
