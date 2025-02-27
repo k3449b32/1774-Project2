@@ -1,3 +1,5 @@
+import numpy as np
+
 #config
 class Settings:
     frequency: float=60

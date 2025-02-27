@@ -6,6 +6,8 @@ from transmission_line import TransmissionLine
 from bundle import Bundle
 from transformer import Transformer
 from conductor import Conductor
+from generator import Generator
+from load import Load
 
 class Circuit:
 
@@ -17,7 +19,11 @@ class Circuit:
         self.geometry = {}
         self.transformers = {}
         self.transmission_lines = {}
+        self.loads = {}
+        self.generators = {}
+        self.bus_type = {}
         self.ybus = None
+        self.first_gen = False
 
     def add_bus(self, name: str, bus_kv: float):
         if name in self.buses:
@@ -54,6 +60,24 @@ class Circuit:
             raise ValueError("Transmission Line is already in circuit")
         else:
             self.transmission_lines[name] = TransmissionLine(name, self.buses[bus1], self.buses[bus2], self.bundles[bundle], self.geometry[geometry], length)
+
+    def add_load_element(self, name: str, bus: str, real_power: float, reactive_power: float):
+        if name in self.loads:
+            raise ValueError("Load is already in circuit")
+        self.loads[name] = Load(name, self.buses[bus], real_power, reactive_power)
+
+
+    def add_generator_element(self, name: str, bus: str, real_power: float, per_unit_voltage: float):
+        if name in self.generators:
+            raise ValueError("Generator is already in circuit")
+        self.generators[name] = Generator(name, self.buses[bus], real_power, per_unit_voltage)
+        # If there is no generator made the first generator is a slack generator and the boolean variable changes
+        if not self.first_gen:
+            self.first_gen = True
+            self.bus_type[bus] = 'slack'
+        # If there already is a generator in the circuit then the next generator is created as PV
+        else:
+            self.bus_type[bus] = 'PV'
 
     def calc_ybus(self):
         # Step 1: Initialize the Ybus matrix as a zero matrix with dimensions N x N
