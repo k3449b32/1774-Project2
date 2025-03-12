@@ -137,3 +137,18 @@ class Circuit:
         self.ybus = self.ybus.round(2)
 
     def compute_power_injection(bus, ybus, voltages):
+        P = 0.0  # Real power injection
+        Q = 0.0  # Reactive power injection
+
+        for n in range(len(voltages)):
+            Ykn = ybus[bus, n]  # Ykn is the element of the admittance matrix
+            Vk = voltages[bus]  # Voltage at the current bus
+            Vn = voltages[n]  # Voltage at bus n
+
+            # Contribution to power injection from this bus pair
+            P += abs(Vk) * abs(Vn) * (Ykn.real * np.cos(np.angle(Vk) - np.angle(Vn)) +
+                                      Ykn.imag * np.sin(np.angle(Vk) - np.angle(Vn)))
+            Q += abs(Vk) * abs(Vn) * (Ykn.real * np.sin(np.angle(Vk) - np.angle(Vn)) -
+                                      Ykn.imag * np.cos(np.angle(Vk) - np.angle(Vn)))
+
+        return P, Q
