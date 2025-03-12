@@ -135,3 +135,5 @@ class Circuit:
         pd.set_option('display.width', None)  # No width limit (adjust to your console's width)
         pd.set_option('display.max_colwidth', None)  # No limit to the column width
         self.ybus = self.ybus.round(2)
+
+    def compute_power_injection(bus, ybus, voltages):
