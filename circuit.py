@@ -141,20 +141,39 @@ class Circuit:
         P = 0.0  # Real power injection
         Q = 0.0  # Reactive power injection
 
-        for other_bus in self.ybus.loc[bus].items():
+        mutual_admittance_sum = 0
 
+        if bus.name not in ybus.index:
+            raise ValueError(f"Bus {bus.name} not found in the Ybus matrix.")
 
-        for n in range(len(voltages)):
-            Ykn = ybus[bus, n]  # Ykn is the element of the admittance matrix
-            Vk = voltages[bus]  # Voltage at the current bus
-            Vn = voltages[n]  # Voltage at bus n
-
-            # Contribution to power injection from this bus pair
-            P += abs(Vk) * abs(Vn) * (Ykn.real * np.cos(np.angle(Vk) - np.angle(Vn)) +
-                                      Ykn.imag * np.sin(np.angle(Vk) - np.angle(Vn)))
-            Q += abs(Vk) * abs(Vn) * (Ykn.real * np.sin(np.angle(Vk) - np.angle(Vn)) -
-                                      Ykn.imag * np.cos(np.angle(Vk) - np.angle(Vn)))
+            # Step 2: Get the index of the bus in the Ybus matrix
+        bus_index = ybus.index.get_loc(bus.name)
+        # Iterate over all columns in the Ybus matrix for the specific row
+        for col_index in range(ybus.shape[1]):
+            if col_index != bus_index:  # Skip self-admittance
+                admittance = ybus.iloc[bus_index, col_index]  # Admittance between bus_index and col_index
+                y_km=abs(admittance) #obtain the absolute value of the admittance
+                delta_km=np.angle(admittance) #obtain the angle of the admittance
+                delta_k=bus.vpu #is this correct????
+                voltage = voltages[col_index]  # Voltage of the other bus
+                mutual_admittance_sum += admittance * voltage  # Multiply and add to the sum
+                #why do we need the voltage matrix, can't we just get voltage from bus.vpu?
+                #how do we get the angle of bus m?
 
         return P, Q
+
+
+        # for n in range(len(voltages)):
+        #     Ykn = ybus[bus, n]  # Ykn is the element of the admittance matrix
+        #     Vk = voltages[bus]  # Voltage at the current bus
+        #     Vn = voltages[n]  # Voltage at bus n
+        #
+        #     # Contribution to power injection from this bus pair
+        #     P += abs(Vk) * abs(Vn) * (Ykn.real * np.cos(np.angle(Vk) - np.angle(Vn)) +
+        #                               Ykn.imag * np.sin(np.angle(Vk) - np.angle(Vn)))
+        #     Q += abs(Vk) * abs(Vn) * (Ykn.real * np.sin(np.angle(Vk) - np.angle(Vn)) -
+        #                               Ykn.imag * np.cos(np.angle(Vk) - np.angle(Vn)))
+
+
 
     def create_
