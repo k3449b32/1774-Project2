@@ -26,6 +26,7 @@ class Circuit:
         self.bus_order = []
         self.real_power = {}
         self.reactive_power = {}
+        self.voltages = {}
 
     def add_bus(self, name: str, bus_kv: float):
         if name in self.buses:
@@ -152,3 +153,5 @@ class Circuit:
                                       Ykn.imag * np.cos(np.angle(Vk) - np.angle(Vn)))
 
         return P, Q
+
+    def
