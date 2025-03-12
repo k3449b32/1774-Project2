@@ -137,9 +137,12 @@ class Circuit:
         pd.set_option('display.max_colwidth', None)  # No limit to the column width
         self.ybus = self.ybus.round(2)
 
-    def compute_power_injection(bus, ybus, voltages):
+    def compute_power_injection(self,bus, ybus, voltages):
         P = 0.0  # Real power injection
         Q = 0.0  # Reactive power injection
+
+        for other_bus in self.ybus.loc[bus].items():
+
 
         for n in range(len(voltages)):
             Ykn = ybus[bus, n]  # Ykn is the element of the admittance matrix
@@ -154,4 +157,4 @@ class Circuit:
 
         return P, Q
 
-    def
+    def create_
