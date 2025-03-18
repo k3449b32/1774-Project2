@@ -26,6 +26,8 @@ class Circuit:
         self.bus_order = []
         self.real_power = {}
         self.reactive_power = {}
+        self.voltages = {}
+        self.angles = {}
 
     def add_bus(self, name: str, bus_kv: float):
         if name in self.buses:
@@ -135,3 +137,41 @@ class Circuit:
         pd.set_option('display.width', None)  # No width limit (adjust to your console's width)
         pd.set_option('display.max_colwidth', None)  # No limit to the column width
         self.ybus = self.ybus.round(2)
+
+    def get_voltages(self,buses): #function to obtain voltage and angle of each bus
+        v = np.zeros(Bus.counter)
+        delta = np.zeros(Bus.counter)
+        bus=buses
+        for k in range(Bus.counter):  # iterate through bus dictionary to get voltage and angle
+            bus1 = bus.iloc[k]
+            v[k] = bus1.vpu
+            delta[k] = bus1.delta
+
+        return v, delta
+
+    def compute_power_injection(self,buses, ybus):
+        #this function takes in buses, ybus (the adimittance matrix)
+        bus=buses
+
+        [v,delta]=self.get_voltages(bus) #obtain the voltages and angles using the get_voltages function
+
+        P = np.zeros(Bus.counter)  # store real power injection for each bus
+        Q = np.zeros(Bus.counter)  # store reactive power injection for each bus
+
+        yabs=ybus.np.abs() #a matrix containing the absolute value of the elements in the ybus matrix
+        ydelta=ybus.np.angle() #get the angles of the ybus matrix
+
+        for k in range(Bus.counter): #iterate through each bus k
+            for n in range(Bus.counter): #iterate through the mutual admittances between bus k and each bus n
+                P[k]=P[k]+v[k]*yabs.iloc[k,n]*v[n]*np.cos(delta[k]-delta[n]-ydelta.iloc[k,n]) #find p injection
+                Q[k]=Q[k]+v[k]*yabs.iloc[k,n]*v[n]*np.sin(delta[k]-delta[n]-ydelta.iloc[k,n]) #find q injection
+
+        print(P)
+        print(Q)
+        return P, Q #return power injection matrices
+
+
+
+
+
+
