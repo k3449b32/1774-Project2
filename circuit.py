@@ -135,3 +135,53 @@ class Circuit:
         pd.set_option('display.width', None)  # No width limit (adjust to your console's width)
         pd.set_option('display.max_colwidth', None)  # No limit to the column width
         self.ybus = self.ybus.round(2)
+
+    def compute_power_mismatch(self):
+        """
+        Computes the power mismatches for each bus in the circuit.
+        The slack bus has no mismatch, PV buses exclude reactive power mismatch,
+        and PQ buses include both real and reactive power mismatches.
+
+        Returns:
+            np.array: Mismatch vector for use in numerical methods.
+        """
+        if self.ybus is None:
+            raise ValueError("Ybus matrix has not been calculated. Run calc_ybus() first.")
+
+        bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
+        mismatch_vector = []
+
+        # Compute power mismatches
+        for bus_name, bus in self.buses.items():
+            if bus == "slack":
+                continue  # No mismatch for slack bus
+
+            idx = bus_indices[bus_name]
+            V = 1.0  # Placeholder for actual voltage magnitude (adjust if needed)
+            theta = 0.0  # Placeholder for voltage angle (adjust if needed)
+
+            # Compute injected complex power
+            S_calc = 0
+            for other_bus_name in self.buses:
+                jdx = bus_indices[other_bus_name]
+                Y_ij = self.ybus.iloc[idx, jdx]
+                V_other = 1.0  # Placeholder for actual voltage magnitude
+                theta_other = 0.0  # Placeholder for voltage angle
+
+                S_calc += V * V_other * (Y_ij * np.exp(1j * (theta - theta_other)))
+
+            P_calc, Q_calc = S_calc.real, S_calc.imag
+
+            # Get specified power values
+            P_spec = self.real_power.get(bus_name, 0)
+            Q_spec = self.reactive_power.get(bus_name, 0)
+
+            # Compute mismatches
+            P_mismatch = P_spec - P_calc
+            if bus == "PV":
+                mismatch_vector.append(P_mismatch)  # Only P mismatch for PV buses
+            else:  # PQ buses
+                Q_mismatch = Q_spec - Q_calc
+                mismatch_vector.extend([P_mismatch, Q_mismatch])
+
+        return np.array(mismatch_vector)
