@@ -21,5 +21,6 @@ print("\nGenerator parameters: ", circuit1.transmission_lines["Line 1"].impedanc
 print("\nLoad parameters: ", circuit1.transmission_lines["Line 1"].impedance_pu, "Series Admittance pu: ", circuit1.transmission_lines["Line 1"].series_admittance,
       "\nShunt Admittance pu: ", circuit1.transmission_lines["Line 1"].shunt_admittance, "\n",circuit1.transmission_lines["Line 1"].y_matrix)
 
-
-
+bus=circuit1.buses
+ybus=circuit1.ybus
+circuit1.compute_power_injection(bus,ybus)
