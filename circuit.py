@@ -138,22 +138,22 @@ class Circuit:
         pd.set_option('display.max_colwidth', None)  # No limit to the column width
         self.ybus = self.ybus.round(2)
 
-    def get_voltages(self,buses): #function to obtain voltage and angle of each bus
-        v = np.zeros(Bus.counter)
-        delta = np.zeros(Bus.counter)
-        bus=buses
-        for k in range(Bus.counter):  # iterate through bus dictionary to get voltage and angle
-            bus1 = bus.iloc[k]
-            v[k] = bus1.vpu
-            delta[k] = bus1.delta
+    def get_voltages(self, buses, bus_name):
+        if bus_name not in buses:
+            raise KeyError(f"Bus '{bus_name}' not found in the buses dictionary.")
 
-        return v, delta
+        bus_obj = buses[bus_name]  # Get the bus object
+        v = bus_obj.V  # Retrieve voltage magnitude
+        delta = bus_obj.delta  # Retrieve voltage angle
+
+        return [v, delta]
 
     def compute_power_injection(self,buses, ybus):
         #this function takes in buses, ybus (the adimittance matrix)
         bus=buses
 
-        [v,delta]=self.get_voltages(bus) #obtain the voltages and angles using the get_voltages function
+        for bus_name in bus:  # Iterate through bus names (keys of the dictionary)
+            [v, delta] = self.get_voltages(bus, bus_name)  # Pass bus name instead of index
 
         P = np.zeros(Bus.counter)  # store real power injection for each bus
         Q = np.zeros(Bus.counter)  # store reactive power injection for each bus
@@ -170,8 +170,29 @@ class Circuit:
         print(Q)
         return P, Q #return power injection matrices
 
+    def compute_power_mismatch(self, buses, ybus):
+        # Get power injections
+        P_calc, Q_calc = self.compute_power_injection(buses, ybus)
 
+        # Initialize mismatch vectors
+        delta_P = np.zeros(len(buses))
+        delta_Q = np.zeros(len(buses))
 
+        for i, bus_name in enumerate(self.bus_order):
+            bus = self.buses[bus_name]
 
+            if bus.bus_type == "slack":
+                # Slack bus has no power mismatch
+                continue
 
+            # Real power mismatch for all non-slack buses
+            delta_P[i] = self.real_power[bus_name] - P_calc[i]
 
+            if bus.bus_type == "PQ":
+                # Reactive power mismatch only for PQ buses
+                delta_Q[i] = self.reactive_power[bus_name] - Q_calc[i]
+
+        # Concatenate mismatch vectors for numerical solution
+        mismatch_vector = np.concatenate((delta_P, delta_Q))
+
+        return mismatch_vector
