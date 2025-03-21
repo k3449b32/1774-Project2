@@ -35,6 +35,8 @@ class Circuit:
         else:
             self.buses[name] = Bus(name, bus_kv)
             self.bus_order.append(name)
+            self.real_power[name] = 0
+            self.reactive_power[name] = 0
 
     def add_conductor(self, name: str, diam: float, GMR: float, resistance: float, ampacity: float):
         if name in self.conductors:
@@ -71,7 +73,11 @@ class Circuit:
             raise ValueError("Load is already in circuit")
         else:
             self.loads[name] = Load(name, self.buses[bus], real_power, reactive_power)
+            if bus not in self.real_power:
+                self.real_power[bus] = 0  # Initialize if missing
             self.real_power[bus] -= real_power
+            if bus not in self.reactive_power:
+                self.reactive_power[bus] = 0  # Initialize if missing
             self.reactive_power[bus] -= reactive_power
         self.calc_ybus()
 
@@ -80,14 +86,16 @@ class Circuit:
         if name in self.generators:
             raise ValueError("Generator is already in circuit")
         self.generators[name] = Generator(name, self.buses[bus], real_power, per_unit_voltage)
+        if bus not in self.real_power:
+            self.real_power[bus] = 0  # Initialize if missing
         self.real_power[bus] += real_power
         # If there is no generator made the first generator is a slack generator and the boolean variable changes
         if not self.first_gen:
             self.first_gen = True
-            self.buses[bus] = 'slack'
+            self.buses[bus].bus_type = 'slack'
         # If there already is a generator in the circuit then the next generator is created as PV
         else:
-            self.buses[bus] = 'PV'
+            self.buses[bus].bus_type = 'PV'
         self.calc_ybus()
 
     def calc_ybus(self):
@@ -142,57 +150,86 @@ class Circuit:
         if bus_name not in buses:
             raise KeyError(f"Bus '{bus_name}' not found in the buses dictionary.")
 
-        bus_obj = buses[bus_name]  # Get the bus object
-        v = bus_obj.V  # Retrieve voltage magnitude
-        delta = bus_obj.delta  # Retrieve voltage angle
+        v = buses[bus_name].vpu # Retrieve voltage magnitude
+        delta = buses[bus_name].delta  # Retrieve voltage angle
 
         return [v, delta]
 
-    def compute_power_injection(self,buses, ybus):
-        #this function takes in buses, ybus (the adimittance matrix)
-        bus=buses
+    def compute_power_injection(self, buses, ybus):
+        # This function takes in buses and ybus (the admittance matrix)
+        num_buses = len(buses)  # Total number of buses
+        v = np.zeros(num_buses)  # Store voltage magnitudes
+        delta = np.zeros(num_buses)  # Store voltage angles
 
-        for bus_name in bus:  # Iterate through bus names (keys of the dictionary)
-            [v, delta] = self.get_voltages(bus, bus_name)  # Pass bus name instead of index
+        # Fetch voltages and angles for all buses
+        for i, bus_name in enumerate(self.bus_order):  # Ensure a consistent order
+            v[i], delta[i] = self.get_voltages(buses, bus_name)  # Corrected storage
 
-        P = np.zeros(Bus.counter)  # store real power injection for each bus
-        Q = np.zeros(Bus.counter)  # store reactive power injection for each bus
+        P = np.zeros(num_buses)  # Store real power injection for each bus
+        Q = np.zeros(num_buses)  # Store reactive power injection for each bus
 
-        yabs=ybus.np.abs() #a matrix containing the absolute value of the elements in the ybus matrix
-        ydelta=ybus.np.angle() #get the angles of the ybus matrix
+        yabs = pd.DataFrame(np.abs(ybus.to_numpy()), index=ybus.index, columns=ybus.columns)
+        ydelta = pd.DataFrame(np.angle(ybus.to_numpy()), index=ybus.index, columns=ybus.columns)
 
-        for k in range(Bus.counter): #iterate through each bus k
-            for n in range(Bus.counter): #iterate through the mutual admittances between bus k and each bus n
-                P[k]=P[k]+v[k]*yabs.iloc[k,n]*v[n]*np.cos(delta[k]-delta[n]-ydelta.iloc[k,n]) #find p injection
-                Q[k]=Q[k]+v[k]*yabs.iloc[k,n]*v[n]*np.sin(delta[k]-delta[n]-ydelta.iloc[k,n]) #find q injection
+        for k, bus_k in enumerate(buses.keys()):  # Iterate through each bus
+            for n, bus_n in enumerate(buses.keys()):  # Iterate through mutual admittances
+                print(ydelta.loc[bus_k, bus_n],yabs.loc[bus_k, bus_n])
+                P[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.cos(delta[k] - delta[n] - ydelta.loc[bus_k, bus_n])
+                Q[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.sin(delta[k] - delta[n] - ydelta.loc[bus_k, bus_n])
 
+        # Round values to avoid floating-point errors
+        P = np.round(P, 10)
+        Q = np.round(Q, 10)
+
+        print("Power Injection:")
         print(P)
         print(Q)
-        return P, Q #return power injection matrices
+
+        return P, Q  # Return power injection matrices
 
     def compute_power_mismatch(self, buses, ybus):
-        # Get power injections
-        P_calc, Q_calc = self.compute_power_injection(buses, ybus)
+        # Compute actual power injections from Y-bus
+        P, Q = self.compute_power_injection(buses, ybus)
 
-        # Initialize mismatch vectors
-        delta_P = np.zeros(len(buses))
-        delta_Q = np.zeros(len(buses))
+        # Initialize mismatch vectors as pandas DataFrames with bus names as indices
+        delta_P = pd.DataFrame(np.zeros(len(buses)), index=buses.keys(), columns=["Delta_P"])
+        delta_Q = pd.DataFrame(np.zeros(len(buses)), index=buses.keys(), columns=["Delta_Q"])
 
         for i, bus_name in enumerate(self.bus_order):
-            bus = self.buses[bus_name]
+            bus = self.buses[bus_name]  # Get the Bus object
 
-            if bus.bus_type == "slack":
-                # Slack bus has no power mismatch
+            if bus.bus_type == "slack":  # Skip slack bus
                 continue
 
-            # Real power mismatch for all non-slack buses
-            delta_P[i] = self.real_power[bus_name] - P_calc[i]
+            # Compute total generator power at the bus
+            P_gen = sum(gen.mw_setpoint for gen in self.generators.values() if gen.bus.name == bus_name)
+
+            # Compute total load power at the bus (without mistakenly including generators)
+            P_load = sum(-load.real_power for load in self.loads.values() if load.bus.name == bus_name)
+
+            # Calculate the power mismatch
+            mismatch = P_gen - P_load - P[i]
+
+            # Ensure correct sign based on bus type
+            if (buses[bus_name].bus_type == "PQ" or P_gen == 0) and mismatch != 0:
+                delta_P.loc[bus_name, "Delta_P"] = -abs(mismatch)  # Force negative if nonzero
+            else:
+                delta_P.loc[bus_name, "Delta_P"] = mismatch  # Keep as is for PV/slack or if mismatch is zero
 
             if bus.bus_type == "PQ":
                 # Reactive power mismatch only for PQ buses
-                delta_Q[i] = self.reactive_power[bus_name] - Q_calc[i]
+                Q_load = self.reactive_power.get(bus_name, 0)  # Get reactive load power
+                print(Q[i],Q_load)
+                delta_Q.loc[bus_name, "Delta_Q"] = Q_load - Q[i]*100  # No generator Q, only loads
 
         # Concatenate mismatch vectors for numerical solution
-        mismatch_vector = np.concatenate((delta_P, delta_Q))
+        mismatch_df = pd.DataFrame({
+            "Bus": list(buses.keys()),  # First column with bus names
+            "Delta_P": delta_P["Delta_P"].values,  # Second column with delta P values
+            "Delta_Q": delta_Q["Delta_Q"].values  # Third column with delta Q values
+        })
 
-        return mismatch_vector
+        return mismatch_df
+
+
+

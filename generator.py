@@ -4,7 +4,7 @@ from bus import Bus
 
 class Generator:
 
-    def __init__(self, name: str, bus: Bus, voltage_setpoint: float, mw_setpoint: float):
+    def __init__(self, name: str, bus: Bus, mw_setpoint: float, voltage_setpoint: float):
         self.name = name
         self.bus = bus
         self.voltage_setpoint = voltage_setpoint

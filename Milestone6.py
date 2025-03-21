@@ -71,10 +71,10 @@ print("\nybus:\n",circuit1.ybus,"\n")
 # injection = circuit1.compute_power_injection(circuit1.buses, circuit1.ybus)
 print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
 
-#print("\nReal Power (MW) at each bus:")
-#for bus, p in circuit1.real_power.items():
-#    print(f"Bus {bus}: {p} MW")
+print("\nReal Power (MW) at each bus:")
+for bus, p in circuit1.real_power.items():
+    print(f"Bus {bus}: {p} MW")
 
-#print("\nReactive Power (MVAR) at each bus:")
-#for bus, q in circuit1.reactive_power.items():
-#   print(f"Bus {bus}: {q} MVAR")
+print("\nReactive Power (MVAR) at each bus:")
+for bus, q in circuit1.reactive_power.items():
+    print(f"Bus {bus}: {q} MVAR")
