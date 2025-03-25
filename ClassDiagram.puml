@@ -78,6 +78,12 @@ class Circuit {
     - geometry: dict
     - transformers: dict
     - transmissionlines: dict
+    - ybus: dict
+    - bus_order: list
+    - real_power: dict
+    - reactive_power: dict
+    - voltages: dict
+    - angles: dict
     + __init__(name: str)
     + add_Bus(name: str, bus_kv: float)
     + add_Conductor(name: str, diam: float, GMR: float, resistance: float, ampacity: float)
@@ -85,6 +91,13 @@ class Circuit {
     + add_Geometry(name: str, xa: float, ya: float, xb: float, yb: float, xc: float, yc: float)
     + add_Transformer(name: str, bus1: Bus, bus2: Bus, power_rating: float, impedance_percent: float, x_over_r_ratio: float)
     + add_TransmissionLine(name: str, bus1: Bus, bus2: Bus, bundle: Bundle, geometry: Geometry, length: float)
+    + add_load_element(name: str, bus: str, real_power: float, reactive_power: float)
+    + add_generator_element(name: str, bus: str, real_power: float, per_unit_voltage: float)
+    + calc_ybus()
+    + get_voltages(buses, bus_name)
+    + compute_power_injection(buses, ybus)
+    + compute_power_mismatch(buses, ybus):
+
 }
 
 Circuit "1" *-- "many" Bus : contains
