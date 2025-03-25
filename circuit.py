@@ -174,8 +174,10 @@ class Circuit:
 
         for k, bus_k in enumerate(buses.keys()):  # Iterate through each bus
             for n, bus_n in enumerate(buses.keys()):  # Iterate through mutual admittances
+
                 #print(ydelta.loc[bus_k, bus_n],yabs.loc[bus_k, bus_n])
                 P[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.cos(delta[k] - delta[n] - ydelta.loc[bus_k, bus_n]) #perform power injection calculation at the current bus
+
                 Q[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.sin(delta[k] - delta[n] - ydelta.loc[bus_k, bus_n])
 
         # Round values to avoid floating-point errors
@@ -220,7 +222,6 @@ class Circuit:
             if bus.bus_type == "PQ":
                 # Reactive power mismatch only for PQ buses
                 Q_load = self.reactive_power.get(bus_name, 0)  # Get reactive load power
-                print(Q[i],Q_load)
                 delta_Q.loc[bus_name, "Delta_Q"] = Q_load - Q[i]*100  # No generator Q, only loads
 
         # Concatenate mismatch vectors for numerical solution
@@ -231,6 +232,4 @@ class Circuit:
         })
 
         return mismatch_df
-
-
-
+    
