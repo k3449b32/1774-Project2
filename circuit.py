@@ -26,9 +26,9 @@ class Circuit:
         self.bus_order = []
         self.real_power = {}
         self.reactive_power = {}
-        self.voltages = {}
-        self.angles = {}
 
+#===========================================================================#
+    #Methods to add bus, conductor, bundle, geometry, transformer, load_element, generator_element
     def add_bus(self, name: str, bus_kv: float):
         if name in self.buses:
             raise ValueError("Bus is already in circuit")
@@ -98,10 +98,11 @@ class Circuit:
             self.buses[bus].bus_type = 'PV'
         self.calc_ybus()
 
-    def calc_ybus(self):
+#============================================================================================================#
+    def calc_ybus(self): #calculate the bus admittance matrix
         # Step 1: Initialize the Ybus matrix as a zero matrix with dimensions N x N
-        N = len(self.buses)  # Number of buses
-        self.ybus = np.zeros((N, N), dtype=complex)
+        N = len(self.buses)  # get the number of buses
+        self.ybus = np.zeros((N, N), dtype=complex) #initialize the y_bus matrix with N columns and rows
 
         # Step 2: Create a dictionary to map bus names to indices for easier reference
         bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
@@ -144,9 +145,9 @@ class Circuit:
         pd.set_option('display.max_columns', None)  # No limit to the number of columns displayed
         pd.set_option('display.width', None)  # No width limit (adjust to your console's width)
         pd.set_option('display.max_colwidth', None)  # No limit to the column width
-        self.ybus = self.ybus.round(2)
+        self.ybus = self.ybus.round(2) #rounding????
 
-    def get_voltages(self, buses, bus_name):
+    def get_voltages(self, buses, bus_name): #function to get the voltage from the specified bus
         if bus_name not in buses:
             raise KeyError(f"Bus '{bus_name}' not found in the buses dictionary.")
 
@@ -168,12 +169,15 @@ class Circuit:
         P = np.zeros(num_buses)  # Store real power injection for each bus
         Q = np.zeros(num_buses)  # Store reactive power injection for each bus
 
-        yabs = pd.DataFrame(np.abs(ybus.to_numpy()), index=ybus.index, columns=ybus.columns)
-        ydelta = pd.DataFrame(np.angle(ybus.to_numpy()), index=ybus.index, columns=ybus.columns)
+        yabs = pd.DataFrame(np.abs(ybus.to_numpy()), index=ybus.index, columns=ybus.columns) #matrix to store admittance magnitudes
+        ydelta = pd.DataFrame(np.angle(ybus.to_numpy()), index=ybus.index, columns=ybus.columns) #matrix to store admittance angles
 
         for k, bus_k in enumerate(buses.keys()):  # Iterate through each bus
             for n, bus_n in enumerate(buses.keys()):  # Iterate through mutual admittances
-                P[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.cos(delta[k] - delta[n] - ydelta.loc[bus_k, bus_n])
+
+                #print(ydelta.loc[bus_k, bus_n],yabs.loc[bus_k, bus_n])
+                P[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.cos(delta[k] - delta[n] - ydelta.loc[bus_k, bus_n]) #perform power injection calculation at the current bus
+
                 Q[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.sin(delta[k] - delta[n] - ydelta.loc[bus_k, bus_n])
 
         # Round values to avoid floating-point errors
@@ -188,7 +192,7 @@ class Circuit:
 
     def compute_power_mismatch(self, buses, ybus):
         # Compute actual power injections from Y-bus
-        P, Q = self.compute_power_injection(buses, ybus)
+        P, Q = self.compute_power_injection(buses, ybus) #call compute_power_injection function
 
         # Initialize mismatch vectors as pandas DataFrames with bus names as indices
         delta_P = pd.DataFrame(np.zeros(len(buses)), index=buses.keys(), columns=["Delta_P"])

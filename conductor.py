@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-
+#initalize a conductor
 class Conductor:
 
     def __init__(self, name: str, diam: float, GMR: float, resistance: float, ampacity: float):
