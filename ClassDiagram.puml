@@ -82,8 +82,6 @@ class Circuit {
     - bus_order: list
     - real_power: dict
     - reactive_power: dict
-    - voltages: dict
-    - angles: dict
     + __init__(name: str)
     + add_Bus(name: str, bus_kv: float)
     + add_Conductor(name: str, diam: float, GMR: float, resistance: float, ampacity: float)
