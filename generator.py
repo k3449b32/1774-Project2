@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from bus import Bus
-
+#initialize a generator object
 class Generator:
 
     def __init__(self, name: str, bus: Bus, mw_setpoint: float, voltage_setpoint: float):

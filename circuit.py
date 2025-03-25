@@ -27,7 +27,8 @@ class Circuit:
         self.real_power = {}
         self.reactive_power = {}
 
-
+#===========================================================================#
+    #Methods to add bus, conductor, bundle, geometry, transformer, load_element, generator_element
     def add_bus(self, name: str, bus_kv: float):
         if name in self.buses:
             raise ValueError("Bus is already in circuit")
@@ -97,6 +98,7 @@ class Circuit:
             self.buses[bus].bus_type = 'PV'
         self.calc_ybus()
 
+#============================================================================================================#
     def calc_ybus(self): #calculate the bus admittance matrix
         # Step 1: Initialize the Ybus matrix as a zero matrix with dimensions N x N
         N = len(self.buses)  # get the number of buses

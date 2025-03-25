@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-class Geometry:
+class Geometry: #calculates the DEQ, based on geometric parameters entered by the user
 
     def __init__(self, name: str, xa: float, ya: float, xb: float, yb: float, xc: float, yc: float):
         self.name = name
