@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-
+#initizalize a bus object
 class Bus:
 
     counter = 0

@@ -18,7 +18,7 @@ class TransmissionLine:
         self.geometry = geometry
         self.length = length
 
-        z_base = self.bus1.base_kv ** 2 / Settings.base_power #calculate the z_base, IDK how to get the voltage
+        z_base = self.bus1.base_kv ** 2 / Settings.base_power #calculate the z_base
 
         self.e_nought = 8.854*10**-12 #value of e nought
         self.r = self.bundle.conductor.resistance/self.bundle.num_conductors #obtain resistance of line, assuming ohms/mile

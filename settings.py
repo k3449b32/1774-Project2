@@ -1,6 +1,6 @@
 import numpy as np
 
-#config
+#config-sets the base_power value and frequency
 class Settings:
 
     frequency: float = 60

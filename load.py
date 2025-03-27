@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from bus import Bus
-
+#load class
 class Load:
 
     def __init__(self, name: str, bus: Bus, real_power: float, reactive_power: float):
