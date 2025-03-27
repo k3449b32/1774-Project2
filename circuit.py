@@ -203,7 +203,7 @@ class Circuit:
             P_load = sum(-load.real_power for load in self.loads.values() if load.bus.name == bus_name)
 
             # Calculate the power mismatch
-            mismatch = P_gen - P_load - P[i]
+            mismatch = P_gen/100 - P_load/100 - P[i]
 
             # Ensure correct sign based on bus type
             if (buses[bus_name].bus_type == "PQ" or P_gen == 0) and mismatch != 0:
@@ -214,7 +214,7 @@ class Circuit:
             if bus.bus_type == "PQ":
                 # Reactive power mismatch only for PQ buses
                 Q_load = self.reactive_power.get(bus_name, 0)  # Get reactive load power
-                delta_Q.loc[bus_name, "Delta_Q"] = Q_load - Q[i]*100  # No generator Q, only loads
+                delta_Q.loc[bus_name, "Delta_Q"] = Q_load/100 - Q[i]  # No generator Q, only loads
 
         # Concatenate mismatch vectors for numerical solution
         mismatch_df = pd.DataFrame({
