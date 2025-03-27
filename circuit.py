@@ -27,7 +27,6 @@ class Circuit:
         self.real_power = {}
         self.reactive_power = {}
         self.voltages = {}
-        self.angles = {}
 
     def add_bus(self, name: str, bus_kv: float):
         if name in self.buses:
@@ -144,7 +143,6 @@ class Circuit:
         pd.set_option('display.max_columns', None)  # No limit to the number of columns displayed
         pd.set_option('display.width', None)  # No width limit (adjust to your console's width)
         pd.set_option('display.max_colwidth', None)  # No limit to the column width
-        self.ybus = self.ybus.round(2)
 
     def get_voltages(self, buses, bus_name):
         if bus_name not in buses:
@@ -173,12 +171,12 @@ class Circuit:
 
         for k, bus_k in enumerate(buses.keys()):  # Iterate through each bus
             for n, bus_n in enumerate(buses.keys()):  # Iterate through mutual admittances
-                P[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.cos(delta[k] - delta[n] - ydelta.loc[bus_k, bus_n])
-                Q[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.sin(delta[k] - delta[n] - ydelta.loc[bus_k, bus_n])
+                angle_n = delta[n] * np.pi / 180    #converting degrees to radians
+                angle_k = delta[k] * np.pi / 180
+                P[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.cos(angle_k - angle_n - ydelta.loc[bus_k, bus_n])
+                Q[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.sin(angle_k - angle_n - ydelta.loc[bus_k, bus_n])
 
         # Round values to avoid floating-point errors
-        P = np.round(P, 10)
-        Q = np.round(Q, 10)
 
         print("Power Injection:")
         print(P)
@@ -207,7 +205,7 @@ class Circuit:
             P_load = sum(-load.real_power for load in self.loads.values() if load.bus.name == bus_name)
 
             # Calculate the power mismatch
-            mismatch = P_gen - P_load - P[i]
+            mismatch = P_gen/100 - P_load/100 - round(P[i],3)
 
             # Ensure correct sign based on bus type
             if (buses[bus_name].bus_type == "PQ" or P_gen == 0) and mismatch != 0:
@@ -218,7 +216,7 @@ class Circuit:
             if bus.bus_type == "PQ":
                 # Reactive power mismatch only for PQ buses
                 Q_load = self.reactive_power.get(bus_name, 0)  # Get reactive load power
-                delta_Q.loc[bus_name, "Delta_Q"] = Q_load - Q[i]*100  # No generator Q, only loads
+                delta_Q.loc[bus_name, "Delta_Q"] = Q_load/100 - round(Q[i],3)  # No generator Q, only loads
 
         # Concatenate mismatch vectors for numerical solution
         mismatch_df = pd.DataFrame({
@@ -228,4 +226,4 @@ class Circuit:
         })
 
         return mismatch_df
-    
+
