@@ -11,88 +11,123 @@ class Jacobian:
         self.bus_order = circuit.bus_order
         self.bus_types = {bus: circuit.buses[bus].bus_type for bus in circuit.bus_order}
 
-        # Get voltage magnitudes and angles using circuit.get_voltages()
         voltages_angles = {bus: circuit.get_voltages(self.buses, bus) for bus in self.bus_order}
         self.voltages = np.array([voltages_angles[bus][0] for bus in self.bus_order])  # vpu
-        self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order])*np.pi/180  # delta
+        self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order]) * np.pi / 180  # delta
+
+        # Bus type classification
+        self.slack_bus = [bus for bus, btype in self.bus_types.items() if btype == "slack"][0]
+        self.pv_buses = [bus for bus, btype in self.bus_types.items() if btype == "PV"]
+        self.pq_buses = [bus for bus, btype in self.bus_types.items() if btype == "PQ"]
+        self.non_slack_buses = [bus for bus in self.bus_order if bus != self.slack_bus]
 
     def compute_jacobian(self):
-        """
-        Compute the full Jacobian matrix by calculating J1, J2, J3, and J4
-        """
         J1 = self.compute_J1()
         J2 = self.compute_J2()
         J3 = self.compute_J3()
         J4 = self.compute_J4()
 
-        # Construct full Jacobian matrix
         self.jacobian_matrix = np.block([[J1, J2], [J3, J4]])
+        print("\nJacobian matrix:\n", self.jacobian_matrix)
         return self.jacobian_matrix
 
     def compute_J1(self):
-        """Compute dP/dδ (J1) for non-slack buses and print itself."""
-
-        num_buses = len(self.bus_order)
-        J1 = np.zeros((num_buses - 1, num_buses - 1))  # Exclude slack bus
-
+        """Compute dP/dδ (J1) for all non-slack buses."""
+        n = len(self.non_slack_buses)
+        J1 = np.zeros((n, n))
         y_abs = np.abs(self.ybus)
         y_angle = np.angle(self.ybus)
 
-        for i, bus_i in enumerate(self.bus_order):
-            if self.bus_types[bus_i] == "slack":
-                continue  # Skip slack bus
+        for i, bus_i in enumerate(self.non_slack_buses):
+            idx_i = self.bus_order.index(bus_i)
+            for j, bus_j in enumerate(self.non_slack_buses):
+                idx_j = self.bus_order.index(bus_j)
 
-            for j, bus_j in enumerate(self.bus_order):
-                if self.bus_types[bus_j] == "slack":
-                    continue  # Skip slack bus
-
-                k = i - 1 if self.bus_types[bus_i] != "slack" else None
-                n = j - 1 if self.bus_types[bus_j] != "slack" else None
-
-                if k is None or n is None:
-                    continue
-
-                if i == j:
-                    # Diagonal elements: sum of terms for all other buses
-                    J1[k, k] = -sum(
-                        self.voltages[i] * self.voltages[m] * y_abs[i, m] * np.sin(
-                            self.angles[i] - self.angles[m] - y_angle[i, m])
-                        for m in range(num_buses) if m != i
+                if idx_i == idx_j:
+                    J1[i, j] = -sum(
+                        self.voltages[idx_i] * self.voltages[m] * y_abs[idx_i, m] *
+                        np.sin(self.angles[idx_i] - self.angles[m] - y_angle[idx_i, m])
+                        for m in range(len(self.bus_order)) if m != idx_i
                     )
                 else:
-                    # Off-diagonal elements
-                    J1[k, n] = self.voltages[i] * self.voltages[j] * y_abs[i, j] * np.sin(
-                        self.angles[i] - self.angles[j] - y_angle[i, j])
+                    J1[i, j] = self.voltages[idx_i] * self.voltages[idx_j] * y_abs[idx_i, idx_j] * np.sin(
+                        self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
-        # Round J1 to 5 decimal places and print
         J1_rounded = np.round(J1, 5)
-        print("J1 Matrix (rounded to 5 decimal places):\n", J1_rounded)
-
+        print("\nJ1 Matrix:\n", J1_rounded)
         return J1_rounded
 
     def compute_J2(self):
-        """
-        Compute J2 (dP/dV) matrix
-        """
-        num_buses = len(self.buses)
-        J2 = np.zeros((num_buses - 1, num_buses - 1))  # Exclude slack bus
+        """Compute dP/dV (J2) for non-slack buses (rows) and PQ buses (columns)."""
+        J2 = np.zeros((len(self.non_slack_buses), len(self.pq_buses)))
+        y_abs = np.abs(self.ybus)
+        y_angle = np.angle(self.ybus)
 
-        return J2
+        for i, bus_i in enumerate(self.non_slack_buses):
+            idx_i = self.bus_order.index(bus_i)
+            for j, bus_j in enumerate(self.pq_buses):
+                idx_j = self.bus_order.index(bus_j)
+
+                if idx_i == idx_j:
+                    J2[i, j] = sum(
+                        self.voltages[idx_i] * y_abs[idx_i, m] *
+                        np.cos(self.angles[idx_i] - self.angles[m] - y_angle[idx_i, m])
+                        for m in range(len(self.bus_order)) if m != idx_i
+                    )
+                else:
+                    J2[i, j] = -self.voltages[idx_i] * y_abs[idx_i, idx_j] * np.cos(
+                        self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
+
+        J2_rounded = np.round(J2, 5)
+        print("\nJ2 Matrix:\n", J2_rounded)
+        return J2_rounded
 
     def compute_J3(self):
-        """
-        Compute J3 (dQ/dδ) matrix
-        """
-        num_buses = len(self.buses)
-        J3 = np.zeros((num_buses - 1, num_buses - 1))  # Exclude slack bus
+        """Compute dQ/dδ (J3) for PQ buses (rows) and non-slack buses (columns)."""
+        J3 = np.zeros((len(self.pq_buses), len(self.non_slack_buses)))
+        y_abs = np.abs(self.ybus)
+        y_angle = np.angle(self.ybus)
 
-        return J3
+        for i, bus_i in enumerate(self.pq_buses):
+            idx_i = self.bus_order.index(bus_i)
+            for j, bus_j in enumerate(self.non_slack_buses):
+                idx_j = self.bus_order.index(bus_j)
+
+                if idx_i == idx_j:
+                    J3[i, j] = sum(
+                        -self.voltages[idx_i] * self.voltages[m] * y_abs[idx_i, m] *
+                        np.cos(self.angles[idx_i] - self.angles[m] - y_angle[idx_i, m])
+                        for m in range(len(self.bus_order)) if m != idx_i
+                    )
+                else:
+                    J3[i, j] = -self.voltages[idx_i] * self.voltages[idx_j] * y_abs[idx_i, idx_j] * np.cos(
+                        self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
+
+        J3_rounded = np.round(J3, 5)
+        print("\nJ3 Matrix:\n", J3_rounded)
+        return J3_rounded
 
     def compute_J4(self):
-        """
-        Compute J4 (dQ/dV) matrix
-        """
-        num_buses = len(self.buses)
-        J4 = np.zeros((num_buses - 1, num_buses - 1))  # Exclude slack bus
+        """Compute dQ/dV (J4) for PQ buses only."""
+        J4 = np.zeros((len(self.pq_buses), len(self.pq_buses)))
+        y_abs = np.abs(self.ybus)
+        y_angle = np.angle(self.ybus)
 
-        return J4
+        for i, bus_i in enumerate(self.pq_buses):
+            idx_i = self.bus_order.index(bus_i)
+            for j, bus_j in enumerate(self.pq_buses):
+                idx_j = self.bus_order.index(bus_j)
+
+                if idx_i == idx_j:
+                    J4[i, j] = sum(
+                        self.voltages[idx_i] * y_abs[idx_i, m] *
+                        np.sin(self.angles[idx_i] - self.angles[m] - y_angle[idx_i, m])
+                        for m in range(len(self.bus_order)) if m != idx_i
+                    )
+                else:
+                    J4[i, j] = self.voltages[idx_i] * y_abs[idx_i, idx_j] * np.sin(
+                        self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
+
+        J4_rounded = np.round(J4, 5)
+        print("\nJ4 Matrix:\n", J4_rounded)
+        return J4_rounded

@@ -71,16 +71,16 @@ print("\nybus:\n",circuit1.ybus,"\n")
 
 
 # injecting voltages and angles for buses
-voltage_data = [1.00000, 0.93692, 0.92049, 0.92980, 0.92673, 0.93968, 1.00000]
-angle_data = [0.00, -4.45, -5.47, -4.70, -4.84, -3.95, 2.15]
-for i, bus_name in enumerate(circuit1.bus_order):
-    circuit1.buses[bus_name].set_voltage_and_delta(voltage_data[i], angle_data[i])
+# voltage_data = [1.00000, 0.93692, 0.92049, 0.92980, 0.92673, 0.93968, 1.00000]
+# angle_data = [0.00, -4.45, -5.47, -4.70, -4.84, -3.95, 2.15]
+# for i, bus_name in enumerate(circuit1.bus_order):
+#    circuit1.buses[bus_name].set_voltage_and_delta(voltage_data[i], angle_data[i])
 
 # injection = circuit1.compute_power_injection(circuit1.buses, circuit1.ybus)
 print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
 
 jacobian = Jacobian(circuit1)
-jacobian.compute_J1()
+jacobian.compute_jacobian()
 
 #print("\nReal Power (MW) at each bus:")
 #for bus, p in circuit1.real_power.items():
