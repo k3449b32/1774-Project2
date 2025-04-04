@@ -46,8 +46,8 @@ circuit1.add_transmission_line("Line 5", circuit1.buses["Bus5"].name, circuit1.b
 circuit1.add_transmission_line("Line 6", circuit1.buses["Bus4"].name, circuit1.buses["Bus5"].name,
                                circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 35)
 
-circuit1.add_generator_element("Generator 1", circuit1.buses["Bus1"].name, 100, circuit1.buses["Bus1"].vpu)
-circuit1.add_generator_element("Generator 2", circuit1.buses["Bus7"].name, 200, circuit1.buses["Bus7"].vpu)
+circuit1.add_generator_element("Generator 1", circuit1.buses["Bus1"].name, 100, circuit1.buses["Bus1"].vpu, )
+circuit1.add_generator_element("Generator 2", circuit1.buses["Bus7"].name, 200, circuit1.buses["Bus7"].vpu, )
 
 circuit1.add_load_element("Load 1", circuit1.buses["Bus3"].name, 110, 50)
 circuit1.add_load_element("Load 2", circuit1.buses["Bus4"].name, 100, 70)

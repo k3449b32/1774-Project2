@@ -81,10 +81,10 @@ class Circuit:
         self.calc_ybus()
 
 
-    def add_generator_element(self, name: str, bus: str, real_power: float, per_unit_voltage: float):
+    def add_generator_element(self, name: str, bus: str, real_power: float, per_unit_voltage: float, subtransient_x):
         if name in self.generators:
             raise ValueError("Generator is already in circuit")
-        self.generators[name] = Generator(name, self.buses[bus], real_power, per_unit_voltage)
+        self.generators[name] = Generator(name, self.buses[bus], real_power, per_unit_voltage, subtransient_x )
         if bus not in self.real_power:
             self.real_power[bus] = 0  # Initialize if missing
         self.real_power[bus] += real_power
