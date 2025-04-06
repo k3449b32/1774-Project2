@@ -233,7 +233,7 @@ class Circuit:
 
 
         for generator in self.generators.values(): #iterate through the generator dictionary
-            bus1_idx = bus_indices[generator.bus1.name] #obtain the bus for each generator, and modify the corresponding position in the y matrix
-            self.ybus[bus1_idx,bus1_idx] += generator.sub_admittance
+            bus1_idx = bus_indices[generator.bus.name] #obtain the bus for each generator, and modify the corresponding position in the y matrix
+            self.ybus.iloc[bus1_idx,bus1_idx] += generator.sub_admittance
 
     
