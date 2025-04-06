@@ -11,4 +11,4 @@ class Generator:
         self.voltage_setpoint = voltage_setpoint
         self.mw_setpoint = mw_setpoint
         self.subtransient_x=subtransient_x*(Settings.base_power/self.mw_setpoint) #change the base of the subtransient reactance
-        
+        self.sub_admittance=1/self.subtransient_x;

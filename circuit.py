@@ -224,4 +224,16 @@ class Circuit:
         })
 
         return mismatch_df
+
+
+    def modify_y_bus(self):
+        #adds subtransient admittance to each bus that has a generator attached
+
+        bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
+
+
+        for generator in self.generators.values(): #iterate through the generator dictionary
+            bus1_idx = bus_indices[generator.bus1.name] #obtain the bus for each generator, and modify the corresponding position in the y matrix
+            self.ybus[bus1_idx,bus1_idx] += generator.sub_admittance
+
     
