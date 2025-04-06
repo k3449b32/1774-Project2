@@ -22,6 +22,7 @@ class Circuit:
         self.loads = {}
         self.generators = {}
         self.ybus = None
+        self.zbus = None
         self.first_gen = False
         self.bus_order = []
         self.real_power = {}
@@ -236,4 +237,17 @@ class Circuit:
             bus1_idx = bus_indices[generator.bus.name] #obtain the bus for each generator, and modify the corresponding position in the y matrix
             self.ybus.iloc[bus1_idx,bus1_idx] += generator.sub_admittance
 
-    
+
+    def calculate_fault(self):
+        #calculates the current and voltage at each bus under fault conditions, as well as the zbus matrix
+        self.zbus=np.linalg.inv(self.ybus)
+        bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
+        fault_current=np.zeros(len(bus_indices))
+        bus_voltage=np.zeros(len(bus_indices))
+
+        for bus_name, index in bus_indices.items():
+
+            i_f=1.0/(self.zbus.iloc[bus_name,bus_name])
+            fault_current[index]=i_f
+
+            e_k=(1)

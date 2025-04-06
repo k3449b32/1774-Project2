@@ -68,6 +68,7 @@ print("\nLine 6 Impedance pu: ", circuit1.transmission_lines["Line 6"].impedance
 
 circuit1.calc_ybus()
 circuit1.modify_y_bus()
+circuit1.calculate_fault()
 print("\nybus:\n",circuit1.ybus,"\n")
 
 
