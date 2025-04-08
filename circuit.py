@@ -241,13 +241,22 @@ class Circuit:
     def calculate_fault(self):
         #calculates the current and voltage at each bus under fault conditions, as well as the zbus matrix
         self.zbus=np.linalg.inv(self.ybus)
-        bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
-        fault_current=np.zeros(len(bus_indices))
-        bus_voltage=np.zeros(len(bus_indices))
+        self.zbus = pd.DataFrame(self.zbus, index=self.ybus.keys(), columns=self.ybus.keys())
+        #bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
+        fault_current=np.zeros(len(self.buses),dtype=complex)
+        fault_voltage=np.zeros(len(self.buses),dtype=complex)
 
-        for bus_name, index in bus_indices.items():
+        faulted_bus = list(self.buses.keys())[0]
 
-            i_f=1.0/(self.zbus.iloc[bus_name,bus_name])
-            fault_current[index]=i_f
+        for idx, bus_name in enumerate(self.buses):
+            znn = self.zbus.loc[faulted_bus, faulted_bus]
+            znk = self.zbus.loc[bus_name, faulted_bus]
 
-            e_k=(1)
+            i_f=1.0/znn
+            fault_current[idx]=i_f
+
+            e_k=1-znk/znn
+            fault_voltage[idx]=e_k
+
+
+        return fault_current,fault_voltage
