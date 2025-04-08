@@ -21,8 +21,15 @@ class Jacobian:
         self.pq_buses = [bus for bus, btype in self.bus_types.items() if btype == "PQ"]
         self.non_slack_buses = [bus for bus in self.bus_order if bus != self.slack_bus]
 
+    def refresh_state(self):
+        voltages_angles = {bus: self.circuit.get_voltages(self.buses, bus) for bus in self.bus_order}
+        self.voltages = np.array([voltages_angles[bus][0] for bus in self.bus_order])
+        self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order]) * np.pi / 180
+
     def compute_jacobian(self):
         """Compute the full Jacobian matrix and return it as a labeled pandas DataFrame."""
+        self.refresh_state()  # ✅ Always use current bus state
+
         np.set_printoptions(linewidth=np.inf, suppress=True)  # Full width printing
 
         J1 = self.compute_J1()
@@ -35,10 +42,7 @@ class Jacobian:
         # Build row and column labels like PowerWorld
         row_labels = [f"dP({bus})" for bus in self.non_slack_buses] + [f"dQ({bus})" for bus in self.pq_buses]
         col_labels = [f"dθ({bus})" for bus in self.non_slack_buses] + [f"dV({bus})" for bus in self.pq_buses]
-
         jacobian_df = pd.DataFrame(jacobian_matrix, index=row_labels, columns=col_labels)
-
-        print("\nJacobian matrix:\n", jacobian_df)
         return jacobian_df
 
     def compute_J1(self):
@@ -64,7 +68,6 @@ class Jacobian:
                         self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
         J1_rounded = np.round(J1, 5)
-        print("\nJ1 Matrix:\n", J1_rounded)
         return J1_rounded
 
     def compute_J2(self):
@@ -89,7 +92,6 @@ class Jacobian:
                         self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
         J2_rounded = -np.round(J2, 5) #switching sign to match Powerworld
-        print("\nJ2 Matrix:\n", J2_rounded)
         return J2_rounded
 
     def compute_J3(self):
@@ -117,7 +119,6 @@ class Jacobian:
                         self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
         J3_rounded = np.round(J3, 5)
-        print("\nJ3 Matrix:\n", J3_rounded)
         return J3_rounded
 
     def compute_J4(self):
@@ -144,6 +145,5 @@ class Jacobian:
                         self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
         J4_rounded = np.round(J4, 5)
-        print("\nJ4 Matrix:\n", J4_rounded)
         return J4_rounded
 
