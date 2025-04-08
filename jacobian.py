@@ -22,14 +22,24 @@ class Jacobian:
         self.non_slack_buses = [bus for bus in self.bus_order if bus != self.slack_bus]
 
     def compute_jacobian(self):
+        """Compute the full Jacobian matrix and return it as a labeled pandas DataFrame."""
+        np.set_printoptions(linewidth=np.inf, suppress=True)  # Full width printing
+
         J1 = self.compute_J1()
         J2 = self.compute_J2()
         J3 = self.compute_J3()
         J4 = self.compute_J4()
 
-        self.jacobian_matrix = np.block([[J1, J2], [J3, J4]])
-        print("\nJacobian matrix:\n", self.jacobian_matrix)
-        return self.jacobian_matrix
+        jacobian_matrix = np.block([[J1, J2], [J3, J4]])
+
+        # Build row and column labels like PowerWorld
+        row_labels = [f"dP({bus})" for bus in self.non_slack_buses] + [f"dQ({bus})" for bus in self.pq_buses]
+        col_labels = [f"dθ({bus})" for bus in self.non_slack_buses] + [f"dV({bus})" for bus in self.pq_buses]
+
+        jacobian_df = pd.DataFrame(jacobian_matrix, index=row_labels, columns=col_labels)
+
+        print("\nJacobian matrix:\n", jacobian_df)
+        return jacobian_df
 
     def compute_J1(self):
         """Compute dP/dδ (J1) for all non-slack buses."""
@@ -78,12 +88,13 @@ class Jacobian:
                     J2[i, j] = -self.voltages[idx_i] * y_abs[idx_i, idx_j] * np.cos(
                         self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
-        J2_rounded = np.round(J2, 5)
+        J2_rounded = -np.round(J2, 5) #switching sign to match Powerworld
         print("\nJ2 Matrix:\n", J2_rounded)
         return J2_rounded
 
     def compute_J3(self):
-        """Compute dQ/dδ (J3) for PQ buses (rows) and non-slack buses (columns)."""
+        """Compute dQ/dδ (J3) for PQ buses (rows) and non-slack buses (columns)
+           using PowerWorld sign convention (positive diagonals)."""
         J3 = np.zeros((len(self.pq_buses), len(self.non_slack_buses)))
         y_abs = np.abs(self.ybus)
         y_angle = np.angle(self.ybus)
@@ -94,12 +105,14 @@ class Jacobian:
                 idx_j = self.bus_order.index(bus_j)
 
                 if idx_i == idx_j:
+                    # Remove the negative sign here for PowerWorld convention
                     J3[i, j] = sum(
-                        -self.voltages[idx_i] * self.voltages[m] * y_abs[idx_i, m] *
+                        self.voltages[idx_i] * self.voltages[m] * y_abs[idx_i, m] *
                         np.cos(self.angles[idx_i] - self.angles[m] - y_angle[idx_i, m])
                         for m in range(len(self.bus_order)) if m != idx_i
                     )
                 else:
+                    # Keep off-diagonal elements negative
                     J3[i, j] = -self.voltages[idx_i] * self.voltages[idx_j] * y_abs[idx_i, idx_j] * np.cos(
                         self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
@@ -108,7 +121,7 @@ class Jacobian:
         return J3_rounded
 
     def compute_J4(self):
-        """Compute dQ/dV (J4) for PQ buses only."""
+        """Compute dQ/dV (J4) for PQ buses only, using PowerWorld sign convention (positive diagonals)."""
         J4 = np.zeros((len(self.pq_buses), len(self.pq_buses)))
         y_abs = np.abs(self.ybus)
         y_angle = np.angle(self.ybus)
@@ -119,15 +132,18 @@ class Jacobian:
                 idx_j = self.bus_order.index(bus_j)
 
                 if idx_i == idx_j:
-                    J4[i, j] = sum(
+                    # Flip sign for PowerWorld convention
+                    J4[i, j] = -sum(
                         self.voltages[idx_i] * y_abs[idx_i, m] *
                         np.sin(self.angles[idx_i] - self.angles[m] - y_angle[idx_i, m])
                         for m in range(len(self.bus_order)) if m != idx_i
                     )
                 else:
+                    # Off-diagonal elements stay the same
                     J4[i, j] = self.voltages[idx_i] * y_abs[idx_i, idx_j] * np.sin(
                         self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
         J4_rounded = np.round(J4, 5)
         print("\nJ4 Matrix:\n", J4_rounded)
         return J4_rounded
+
