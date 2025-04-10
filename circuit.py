@@ -238,25 +238,29 @@ class Circuit:
             self.ybus.iloc[bus1_idx,bus1_idx] += generator.sub_admittance
 
 
-    def calculate_fault(self):
+    def calculate_fault(self,faulted_bus):
         #calculates the current and voltage at each bus under fault conditions, as well as the zbus matrix
         self.zbus=np.linalg.inv(self.ybus)
         self.zbus = pd.DataFrame(self.zbus, index=self.ybus.keys(), columns=self.ybus.keys())
         #bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
-        fault_current=np.zeros(len(self.buses),dtype=complex)
+        #fault_current=np.zeros(len(self.buses),dtype=complex)
         fault_voltage=np.zeros(len(self.buses),dtype=complex)
 
-        faulted_bus = list(self.buses.keys())[0]
+        #faulted_bus = list(self.buses.keys())[0]
+        f_bus_index=self.buses[faulted_bus]
+
+        znn = self.zbus.loc[faulted_bus, faulted_bus]
+        i_f = 1.0 / znn
+
 
         for idx, bus_name in enumerate(self.buses):
-            znn = self.zbus.loc[faulted_bus, faulted_bus]
+
             znk = self.zbus.loc[bus_name, faulted_bus]
 
-            i_f=1.0/znn
-            fault_current[idx]=i_f
+
 
             e_k=1-znk/znn
             fault_voltage[idx]=e_k
 
 
-        return fault_current,fault_voltage
+        return i_f,fault_voltage

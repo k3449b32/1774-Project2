@@ -9,15 +9,16 @@ from jacobian import Jacobian
 #declare a solution object, then do solutionObject.solve()
 
 class Solution:
-    def __init__(self, circuit:Circuit,solve_mode):
+    def __init__(self, circuit:Circuit):
         self.circuit=circuit
 
-        self.solve_mode=solve_mode
-    def solve(self):
-        if self.solve_mode == "power_flow":
-            self.circuit.calc_ybus()
-            jacobian = Jacobian(self.circuit)
-            jacobian.compute_jacobian()
 
-        else:
-            pass
+    def solve_power_flow(self):
+
+        self.circuit.calc_ybus()
+        jacobian = Jacobian(self.circuit)
+        jacobian.compute_jacobian()
+
+
+    def solve_fault(self,bus_name):
+        pass
