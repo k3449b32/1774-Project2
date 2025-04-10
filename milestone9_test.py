@@ -46,8 +46,8 @@ circuit1.add_transmission_line("Line 5", circuit1.buses["Bus5"].name, circuit1.b
 circuit1.add_transmission_line("Line 6", circuit1.buses["Bus4"].name, circuit1.buses["Bus5"].name,
                                circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 35)
 
-circuit1.add_generator_element("Generator 1", circuit1.buses["Bus1"].name, 100, circuit1.buses["Bus1"].vpu,0.10 )
-circuit1.add_generator_element("Generator 2", circuit1.buses["Bus7"].name, 200, circuit1.buses["Bus7"].vpu, 0.10)
+circuit1.add_generator_element("Generator 1", circuit1.buses["Bus1"].name, 100, circuit1.buses["Bus1"].vpu,0.12 )
+circuit1.add_generator_element("Generator 2", circuit1.buses["Bus7"].name, 200, circuit1.buses["Bus7"].vpu, 0.12)
 
 circuit1.add_load_element("Load 1", circuit1.buses["Bus3"].name, 110, 50)
 circuit1.add_load_element("Load 2", circuit1.buses["Bus4"].name, 100, 70)
@@ -68,7 +68,7 @@ print("\nLine 6 Impedance pu: ", circuit1.transmission_lines["Line 6"].impedance
 
 circuit1.calc_ybus()
 circuit1.modify_y_bus()
-fault_current,fault_voltage = circuit1.calculate_fault()
+fault_current,fault_voltage = circuit1.calculate_fault("Bus1")
 
 
 print("\nybus:\n",circuit1.ybus,"\n")

@@ -247,7 +247,7 @@ class Circuit:
         fault_voltage=np.zeros(len(self.buses),dtype=complex)
 
         #faulted_bus = list(self.buses.keys())[0]
-        f_bus_index=self.buses[faulted_bus]
+        #f_bus_index=self.buses[faulted_bus]
 
         znn = self.zbus.loc[faulted_bus, faulted_bus]
         i_f = 1.0 / znn
