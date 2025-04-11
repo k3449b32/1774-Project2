@@ -20,7 +20,7 @@ class TransmissionLine:
 
         z_base = self.bus1.base_kv ** 2 / Settings.base_power #calculate the z_base
 
-        self.e_nought = 8.854*10**-12 #value of e nought
+        self.e_nought = 8.854187817*10**-12 #value of e nought
         self.r = self.bundle.conductor.resistance/self.bundle.num_conductors #obtain resistance of line, assuming ohms/mile
 
         self.impedance_pu = self.calc_impedance() / z_base # get value of impedance in ohms
@@ -30,11 +30,11 @@ class TransmissionLine:
 
     def calc_impedance(self): #z'=R'+jwL'
         L = (2*(10**-7))*np.log(self.geometry.DEQ / self.bundle.DSL) #calculate distributed inductance in Henrys/meter
-        return (self.r + 1j*2*np.pi*Settings.frequency*L*1609.34) * self.length #calcualte distributed impedance, converting to ohms/miles
+        return (self.r + 1j*2*np.pi*Settings.frequency*L*1609.344) * self.length #calcualte distributed impedance, converting to ohms/miles
 
     def calc_admittance(self):
         C = (2*np.pi*self.e_nought)/(np.log((self.geometry.DEQ / self.bundle.DSC))) #calculate distributed capacitance in Farads/meter
-        return (1j*2*np.pi*Settings.frequency*C*1609.34) * self.length #return distributed admittance converted to siemens/miles, conductance omitted
+        return (1j*2*np.pi*Settings.frequency*C*1609.344) * self.length #return distributed admittance converted to siemens/miles, conductance omitted
 
     def calc_y_matrix(self):
         y_matrix = np.zeros((2,2), dtype=complex) # initializing a 2x2 matrix of zeros

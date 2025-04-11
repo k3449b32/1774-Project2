@@ -9,7 +9,7 @@ class Power_Flow:
         self.circuit = circuit
         self.jacobian = jacobian
 
-    def solve(self, buses, ybus, tol=1e-7, max_iter=50):
+    def solve(self, buses, ybus, tol=0.001, max_iter=1):
         converged = False
 
         for iteration in range(max_iter):
@@ -17,12 +17,26 @@ class Power_Flow:
 
             # Step 1: Calculate power mismatches
             mismatch_df = self.circuit.compute_power_mismatch(buses, ybus)
+            print(mismatch_df)
 
             # Step 2: Build mismatch vector (ΔP + ΔQ) matching Jacobian's order
-            mismatch_df.set_index("Bus", inplace=True)
-            delta_P = mismatch_df.loc[self.jacobian.non_slack_buses, "Delta_P"].values
-            delta_Q = mismatch_df.loc[self.jacobian.pq_buses, "Delta_Q"].values
-            mismatch_vector = np.concatenate([delta_P, delta_Q])
+            delta_P = []
+            delta_Q = []
+
+            # Non-slack buses (PV and PQ) for ΔP
+            for bus_name in self.circuit.bus_order:
+                bus_type = buses[bus_name].bus_type
+                if bus_type != 'slack':
+                    delta_P.append(mismatch_df.loc[mismatch_df["Bus"] == bus_name, "Delta_P"].values[0])
+
+            # PQ buses only for ΔQ
+            for bus_name in self.circuit.bus_order:
+                bus_type = buses[bus_name].bus_type
+                if bus_type == 'PQ':
+                    delta_Q.append(mismatch_df.loc[mismatch_df["Bus"] == bus_name, "Delta_Q"].values[0])
+
+            # Form combined mismatch vector
+            mismatch_vector = np.array(delta_P + delta_Q)
 
             # Step 3: Check convergence
             max_mismatch = np.max(np.abs(mismatch_vector))
@@ -43,7 +57,7 @@ class Power_Flow:
             # Step 6: Update angles (Δθ in radians) and voltages (ΔV)
             delta_idx = 0
             for bus in self.jacobian.non_slack_buses:
-                buses[bus].delta += delta_x[delta_idx]  # all stored in radians
+                buses[bus].delta += np.radians(delta_x[delta_idx])  # ✅ converting degrees → radians
                 delta_idx += 1
             for bus in self.jacobian.pq_buses:
                 buses[bus].vpu += delta_x[delta_idx]

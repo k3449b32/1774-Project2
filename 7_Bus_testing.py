@@ -81,12 +81,29 @@ print("\nybus:\n",circuit1.ybus,"\n")
 print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
 
 jacobian = Jacobian(circuit1)
-print(jacobian.compute_jacobian())
 
 # Solve the power flow and print results
 powerflow = Power_Flow(circuit1, jacobian)
 print("\n--- Solving Power Flow ---")
 powerflow.solve(circuit1.buses, circuit1.ybus)
+print(jacobian.compute_jacobian())
+print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
+
+
+# injecting voltages and angles for buses
+#voltage_data = [1.00000, 0.93692, 0.92049, 0.92980, 0.92673, 0.93968, 1.00000]
+#angle_data = [0.00, -4.45, -5.47, -4.70, -4.84, -3.95, 2.15]
+#for i, bus_name in enumerate(circuit1.bus_order):
+#    circuit1.buses[bus_name].set_voltage_and_delta(voltage_data[i], angle_data[i])
+
+#print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
+
+#voltage_data = [1.00000, 0.94276, 0.92683, 0.93594, 0.93315, 0.9460, 1.00000]
+#angle_data = [0.00, -3.7213, -4.58287, -3.93422, -4.03836, -3.28016, 2.00501]
+#for i, bus_name in enumerate(circuit1.bus_order):
+#    circuit1.buses[bus_name].set_voltage_and_delta(voltage_data[i], angle_data[i])
+
+#print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
 
 #print("\nReal Power (MW) at each bus:")
 #for bus, p in circuit1.real_power.items():
