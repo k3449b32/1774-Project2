@@ -255,11 +255,11 @@ class Circuit:
 
         for idx, bus_name in enumerate(self.buses):
 
-            znk = self.zbus.loc[bus_name, faulted_bus]
+            zkn = self.zbus.loc[bus_name, faulted_bus]
 
 
 
-            e_k=1-znk/znn
+            e_k=1-zkn/znn
             fault_voltage[idx]=e_k
 
 
