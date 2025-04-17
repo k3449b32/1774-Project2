@@ -46,8 +46,8 @@ circuit1.add_transmission_line("Line 5", circuit1.buses["Bus5"].name, circuit1.b
 circuit1.add_transmission_line("Line 6", circuit1.buses["Bus4"].name, circuit1.buses["Bus5"].name,
                                circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 35)
 
-circuit1.add_generator_element("Generator 1", circuit1.buses["Bus1"].name, 100, circuit1.buses["Bus1"].vpu, 0.1 )
-circuit1.add_generator_element("Generator 2", circuit1.buses["Bus7"].name, 200, circuit1.buses["Bus7"].vpu, 0.1 )
+circuit1.add_generator_element("Generator 1", circuit1.buses["Bus1"].name, 100, circuit1.buses["Bus1"].vpu,0.12 )
+circuit1.add_generator_element("Generator 2", circuit1.buses["Bus7"].name, 200, circuit1.buses["Bus7"].vpu, 0.12)
 
 circuit1.add_load_element("Load 1", circuit1.buses["Bus3"].name, 110, 50)
 circuit1.add_load_element("Load 2", circuit1.buses["Bus4"].name, 100, 70)
@@ -67,7 +67,13 @@ print("\nLine 6 Impedance pu: ", circuit1.transmission_lines["Line 6"].impedance
       "\nShunt Admittance pu: ", circuit1.transmission_lines["Line 6"].shunt_admittance, "\n",circuit1.transmission_lines["Line 6"].y_matrix)
 
 circuit1.calc_ybus()
+circuit1.modify_y_bus()
+fault_current,fault_voltage = circuit1.calculate_fault("Bus1")
+
+
 print("\nybus:\n",circuit1.ybus,"\n")
+print("\nfault_current:\n",fault_current)
+print("\nfault_voltage:\n",fault_voltage)
 
 
 # injecting voltages and angles for buses
@@ -77,15 +83,7 @@ print("\nybus:\n",circuit1.ybus,"\n")
 #    circuit1.buses[bus_name].set_voltage_and_delta(voltage_data[i], angle_data[i])
 
 # injection = circuit1.compute_power_injection(circuit1.buses, circuit1.ybus)
-print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
-
-jacobian = Jacobian(circuit1)
-jacobian.compute_jacobian()
-
-#print("\nReal Power (MW) at each bus:")
-#for bus, p in circuit1.real_power.items():
-#    print(f"Bus {bus}: {p} MW")
-
-#print("\nReactive Power (MVAR) at each bus:")
-#for bus, q in circuit1.reactive_power.items():
-#   print(f"Bus {bus}: {q} MVAR")
+# print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
+#
+# jacobian = Jacobian(circuit1)
+# jacobian.compute_jacobian()

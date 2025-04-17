@@ -14,7 +14,7 @@ circuit1.add_geometry("Geometry 1", 0, 0, 19.5, 0, 39, 0)
 circuit1.add_bundle("Bundle 1", 2, 1.5, circuit1.conductors["Partridge"].name)
 
 circuit1.add_load_element("load1","Bus2",100,20)
-circuit1.add_generator_element("gen1","Bus1",100,1.0)
+circuit1.add_generator_element("gen1", "Bus1", 100, 1.0, )
 
 print("\nGenerator parameters: ", circuit1.transmission_lines["Line 1"].impedance_pu, "Series Admittance pu: ", circuit1.transmission_lines["Line 1"].series_admittance,
       "\nShunt Admittance pu: ", circuit1.transmission_lines["Line 1"].shunt_admittance, "\n",circuit1.transmission_lines["Line 1"].y_matrix)

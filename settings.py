@@ -4,7 +4,7 @@ import numpy as np
 class Settings:
 
     frequency: float = 60
-    base_power: float = 100
+    base_power: float = 100 #in MW?
 
     # def compute_power_injection(self, bus, ybus, voltages):
     # 

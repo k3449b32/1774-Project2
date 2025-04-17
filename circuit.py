@@ -22,6 +22,7 @@ class Circuit:
         self.loads = {}
         self.generators = {}
         self.ybus = None
+        self.zbus = None
         self.first_gen = False
         self.bus_order = []
         self.real_power = {}
@@ -81,10 +82,10 @@ class Circuit:
         self.calc_ybus()
 
 
-    def add_generator_element(self, name: str, bus: str, real_power: float, per_unit_voltage: float):
+    def add_generator_element(self, name: str, bus: str, real_power: float, per_unit_voltage: float, subtransient_x):
         if name in self.generators:
             raise ValueError("Generator is already in circuit")
-        self.generators[name] = Generator(name, self.buses[bus], real_power, per_unit_voltage)
+        self.generators[name] = Generator(name, self.buses[bus], real_power, per_unit_voltage, subtransient_x )
         if bus not in self.real_power:
             self.real_power[bus] = 0  # Initialize if missing
         self.real_power[bus] += real_power
@@ -224,4 +225,42 @@ class Circuit:
         })
 
         return mismatch_df
-    
+
+
+    def modify_y_bus(self):
+        #adds subtransient admittance to each bus that has a generator attached
+
+        bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
+
+
+        for generator in self.generators.values(): #iterate through the generator dictionary
+            bus1_idx = bus_indices[generator.bus.name] #obtain the bus for each generator, and modify the corresponding position in the y matrix
+            self.ybus.iloc[bus1_idx,bus1_idx] += generator.sub_admittance
+
+
+    def calculate_fault(self,faulted_bus):
+        #calculates the current and voltage at each bus under fault conditions, as well as the zbus matrix
+        self.zbus=np.linalg.inv(self.ybus)
+        self.zbus = pd.DataFrame(self.zbus, index=self.ybus.keys(), columns=self.ybus.keys())
+        #bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
+        #fault_current=np.zeros(len(self.buses),dtype=complex)
+        fault_voltage=np.zeros(len(self.buses),dtype=complex)
+
+        #faulted_bus = list(self.buses.keys())[0]
+        #f_bus_index=self.buses[faulted_bus]
+
+        znn = self.zbus.loc[faulted_bus, faulted_bus]
+        i_f = 1.0 / znn
+
+
+        for idx, bus_name in enumerate(self.buses):
+
+            zkn = self.zbus.loc[bus_name, faulted_bus]
+
+
+
+            e_k=1-zkn/znn
+            fault_voltage[idx]=e_k
+
+
+        return i_f,fault_voltage
