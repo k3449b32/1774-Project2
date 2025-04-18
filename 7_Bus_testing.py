@@ -1,6 +1,7 @@
 from circuit import Circuit
 from jacobian import Jacobian
 from power_flow import Power_Flow
+import numpy as np
 
 # Creating Circuit for 7-bus powerworld system
 circuit1 = Circuit("circuit1")
@@ -72,22 +73,23 @@ print("\nybus:\n",circuit1.ybus,"\n")
 
 
 # injecting voltages and angles for buses
-# voltage_data = [1.00000, 0.93692, 0.92049, 0.92980, 0.92673, 0.93968, 1.00000]
-# angle_data = [0.00, -4.45, -5.47, -4.70, -4.84, -3.95, 2.15]
-# for i, bus_name in enumerate(circuit1.bus_order):
-#    circuit1.buses[bus_name].set_voltage_and_delta(voltage_data[i], angle_data[i])
+voltage_data = [1.00000, 0.93692, 0.92049, 0.92980, 0.92673, 0.93968, 1.00000]
+angle_data = [0.00, -4.44372, -5.46427, -4.70277, -4.83394, -3.9515, 2.15156]
+for i, bus_name in enumerate(circuit1.bus_order):
+    circuit1.buses[bus_name].set_voltage_and_delta(voltage_data[i], angle_data[i])
 
 # injection = circuit1.compute_power_injection(circuit1.buses, circuit1.ybus)
 print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
 
 jacobian = Jacobian(circuit1)
+print(jacobian.compute_jacobian())
 
 # Solve the power flow and print results
-powerflow = Power_Flow(circuit1, jacobian)
-print("\n--- Solving Power Flow ---")
-powerflow.solve(circuit1.buses, circuit1.ybus)
-print(jacobian.compute_jacobian())
-print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
+#powerflow = Power_Flow(circuit1, jacobian)
+#print("\n--- Solving Power Flow ---")
+#powerflow.solve(circuit1.buses, circuit1.ybus)
+#print(jacobian.compute_jacobian())
+#print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
 
 
 # injecting voltages and angles for buses
@@ -112,3 +114,10 @@ print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circ
 #print("\nReactive Power (MVAR) at each bus:")
 #for bus, q in circuit1.reactive_power.items():
 #   print(f"Bus {bus}: {q} MVAR")
+
+#x = .93692*1*(np.sqrt(14.6329**2+1.46329**2))*np.cos(-4.44372*np.pi/180 - 0 - (np.atan(14.6329/(-1.46329)))+np.pi)
+#y = .93692*.93692*(np.sqrt(37.777303**2+127.050299**2))*np.cos((np.atan(-127.050299/(37.777303))))
+#z = .93692*.92049*(np.sqrt(32.13782**2+10.375432**2))*np.cos(-4.44372*np.pi/180 - (-5.46427*np.pi/180) - (np.atan((32.13782/-10.375432)))+np.pi)
+#a = .93692*.9298*(np.sqrt(25.93858**2+80.34455**2))*np.cos(-4.44372*np.pi/180 - (-4.70277*np.pi/180) - (np.atan((80.34455/-25.93858)))+np.pi)
+#b = x+y+z+a
+#print(x,y,z,a,b)

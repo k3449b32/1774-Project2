@@ -18,6 +18,7 @@ class Power_Flow:
             # Step 1: Calculate power mismatches
             mismatch_df = self.circuit.compute_power_mismatch(buses, ybus)
             print(mismatch_df)
+            self.circuit.radians = 1
 
             # Step 2: Build mismatch vector (ΔP + ΔQ) matching Jacobian's order
             delta_P = []
@@ -50,14 +51,17 @@ class Power_Flow:
 
             # Step 4: Compute Jacobian
             J = self.jacobian.compute_jacobian().values
+            print(J)
 
             # Step 5: Solve J * Δx = mismatch
             delta_x = np.linalg.solve(J, mismatch_vector)
+            print("Delta x:\n", delta_x)
 
             # Step 6: Update angles (Δθ in radians) and voltages (ΔV)
             delta_idx = 0
             for bus in self.jacobian.non_slack_buses:
-                buses[bus].delta += np.radians(delta_x[delta_idx])  # ✅ converting degrees → radians
+                buses[bus].delta += (delta_x[delta_idx])
+
                 delta_idx += 1
             for bus in self.jacobian.pq_buses:
                 buses[bus].vpu += delta_x[delta_idx]
@@ -82,5 +86,3 @@ class Power_Flow:
             print(f"{bus}: V = {v:.5f} p.u., δ = {delta_deg:.5f}°")
 
         return buses
-
-

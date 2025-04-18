@@ -13,7 +13,10 @@ class Jacobian:
 
         voltages_angles = {bus: circuit.get_voltages(self.buses, bus) for bus in self.bus_order}
         self.voltages = np.array([voltages_angles[bus][0] for bus in self.bus_order])  # vpu
-        self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order]) * np.pi / 180  # delta
+        if self.circuit.radians == 0:
+            self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order]) * np.pi /180
+        else:
+            self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order])
 
         # Bus type classification
         self.slack_bus = [bus for bus, btype in self.bus_types.items() if btype == "slack"][0]
@@ -24,7 +27,10 @@ class Jacobian:
     def refresh_state(self):
         voltages_angles = {bus: self.circuit.get_voltages(self.buses, bus) for bus in self.bus_order}
         self.voltages = np.array([voltages_angles[bus][0] for bus in self.bus_order])
-        self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order]) * np.pi / 180
+        if self.circuit.radians == 0:
+            self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order]) * np.pi / 180  # delta
+        else:
+            self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order])
 
     def compute_jacobian(self):
         """Compute the full Jacobian matrix and return it as a labeled pandas DataFrame."""
@@ -44,6 +50,26 @@ class Jacobian:
         col_labels = [f"dθ({bus})" for bus in self.non_slack_buses] + [f"dV({bus})" for bus in self.pq_buses]
         jacobian_df = pd.DataFrame(jacobian_matrix, index=row_labels, columns=col_labels)
         return jacobian_df
+
+    def invert_jacobian(self):
+        """Compute and print the inverse of the Jacobian matrix as a labeled DataFrame."""
+        jacobian_df = self.compute_jacobian()
+        jacobian_matrix = jacobian_df.to_numpy()
+
+        try:
+            inv_jacobian = np.linalg.inv(jacobian_matrix)
+        except np.linalg.LinAlgError:
+            print("Jacobian matrix is singular and cannot be inverted.")
+            return None
+
+        # Use same row/column labels as the original Jacobian
+        row_labels = jacobian_df.columns  # Jacobian columns become inverse rows
+        col_labels = jacobian_df.index  # Jacobian rows become inverse columns
+
+        inv_df = pd.DataFrame(inv_jacobian, index=row_labels, columns=col_labels)
+        print("Inverse Jacobian:")
+        print(inv_df)
+        return inv_df
 
     def compute_J1(self):
         """Compute dP/dδ (J1) for all non-slack buses."""
@@ -67,8 +93,7 @@ class Jacobian:
                     J1[i, j] = self.voltages[idx_i] * self.voltages[idx_j] * y_abs[idx_i, idx_j] * np.sin(
                         self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
-        J1_rounded = np.round(J1, 5)
-        return J1_rounded
+        return J1
 
     def compute_J2(self):
         """Compute dP/dV (J2) for non-slack buses (rows) and PQ buses (columns)."""
@@ -82,17 +107,32 @@ class Jacobian:
                 idx_j = self.bus_order.index(bus_j)
 
                 if idx_i == idx_j:
-                    J2[i, j] = sum(
-                        self.voltages[idx_i] * y_abs[idx_i, m] *
-                        np.cos(self.angles[idx_i] - self.angles[m] - y_angle[idx_i, m])
-                        for m in range(len(self.bus_order)) if m != idx_i
-                    )
+                    total = 0
+                    print(f"\n---- Debug for Bus {bus_i} (idx {idx_i}) ----")
+                    print(f"Voltage[{idx_i}] = {self.voltages[idx_i]}")
+                    for m in range(len(self.bus_order)):
+                        if m != idx_i:
+                            term_voltage = self.voltages[idx_i]
+                            term_y_abs = y_abs[idx_i, m]
+                            angle_diff = self.angles[idx_i] - self.angles[m]
+                            theta = y_angle[idx_i, m]
+                            cos_term = np.cos(angle_diff - theta)
+                            term = term_voltage * term_y_abs * cos_term
+
+                            print(f"  m = {m}: V = {term_voltage:.4f}, |Y| = {term_y_abs:.4f}, "
+                                  f"Δδ = {angle_diff:.4f}, θ = {theta:.4f}, cos = {cos_term:.4f}, "
+                                  f"term = {term:.4f}")
+
+                            total += term
+
+                    print(f"  >>> SUM = {total:.6f}")
+                    J2[i, j] = total
+
                 else:
                     J2[i, j] = -self.voltages[idx_i] * y_abs[idx_i, idx_j] * np.cos(
                         self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
-        J2_rounded = -np.round(J2, 5) #switching sign to match Powerworld
-        return J2_rounded
+        return -J2
 
     def compute_J3(self):
         """Compute dQ/dδ (J3) for PQ buses (rows) and non-slack buses (columns)
@@ -118,8 +158,7 @@ class Jacobian:
                     J3[i, j] = -self.voltages[idx_i] * self.voltages[idx_j] * y_abs[idx_i, idx_j] * np.cos(
                         self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
-        J3_rounded = np.round(J3, 5)
-        return J3_rounded
+        return J3
 
     def compute_J4(self):
         """Compute dQ/dV (J4) for PQ buses only, using PowerWorld sign convention (positive diagonals)."""
@@ -144,6 +183,5 @@ class Jacobian:
                     J4[i, j] = self.voltages[idx_i] * y_abs[idx_i, idx_j] * np.sin(
                         self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
-        J4_rounded = np.round(J4, 5)
-        return J4_rounded
+        return J4
 

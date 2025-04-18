@@ -27,6 +27,7 @@ class Circuit:
         self.real_power = {}
         self.reactive_power = {}
         self.voltages = {}
+        self.radians = 0
 
     def add_bus(self, name: str, bus_kv: float):
         if name in self.buses:
@@ -171,8 +172,15 @@ class Circuit:
 
         for k, bus_k in enumerate(buses.keys()):  # Iterate through each bus
             for n, bus_n in enumerate(buses.keys()):  # Iterate through mutual admittances
-                delta_k = delta[k] * np.pi/180
-                delta_n = delta[n] * np.pi/180
+                if self.radians == 0:
+                    delta_k = delta[k] * np.pi / 180
+                    delta_n = delta[n] * np.pi / 180
+                else:
+                    delta_k = delta[k]
+                    delta_n = delta[n]
+                #print(
+                    #f"bus_k={bus_k:<5} bus_n={bus_n:<5}  v[k]={v[k]:.5f}  v[n]={v[n]:.5f}  |Yₖₙ|={yabs.loc[bus_k, bus_n]:.5f}  Δk={delta_k:.5f}  Δn={delta_n:.5f}  θₖₙ={ydelta.loc[bus_k, bus_n]:.5f}",
+                    #np.cos(delta_k - delta_n - ydelta.loc[bus_k, bus_n]))
                 P[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.cos(delta_k - delta_n - ydelta.loc[bus_k, bus_n])
                 Q[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.sin(delta_k - delta_n - ydelta.loc[bus_k, bus_n])
 
