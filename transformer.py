@@ -6,7 +6,7 @@ from settings import Settings
 class Transformer:
 
 
-    def __init__(self, name: str, bus1: Bus, bus2: Bus, power_rating: float, impedance_percent: float, x_over_r_ratio: float):
+    def __init__(self, name: str, bus1: Bus, bus2: Bus, power_rating: float, impedance_percent: float, x_over_r_ratio: float,connection_type,z_ground):
         self.name = name
         self.bus1 = bus1
         self.bus2 = bus2
@@ -16,6 +16,10 @@ class Transformer:
         self.zseries = self.calc_impedance()
         self.yseries = self.calc_admittance()
         self.y_matrix = self.calc_y_matrix()
+        self.z_ground=z_ground
+        self.positive_z = self.zseries
+        self.negative_z = self.zseries
+        self.zero_z = 3*self.z_ground+self.zseries
 
     def calc_impedance(self): #method to calculate impedance
         zpu = self.impedance_percent/100 * np.exp(1j * np.atan(self.x_over_r_ratio)) * Settings.base_power/self.power_rating

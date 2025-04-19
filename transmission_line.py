@@ -29,6 +29,12 @@ class TransmissionLine:
         self.y_matrix = self.calc_y_matrix() # automatically creating the admittance matrix
 
         self.z_zero=2.5*self.impedance_pu #calculate zero sequence impedance
+        self.z_positive = self.impedance_pu
+        self.z_negative = self.impedance_pu
+
+        self.y_zero = 1/self.z_zero
+        self.y_positive = 1/self.z_positive
+        self.y_negative = 1/self.z_negative
 
         #negative sequence is also the same as regular impedance?????
 
