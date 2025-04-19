@@ -23,6 +23,7 @@ class Generator:
 
         self.zero_yprim = self.calc_y_matrix(self.sub_admittance)
         self.negative_yprim = self.calc_y_matrix(self.y_negative)
+        #is there a positive sequence yprim??!?
 
 
     def calc_y_matrix(self,y):
