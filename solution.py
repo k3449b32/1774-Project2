@@ -30,3 +30,10 @@ class Solution:
             print("\nybus:\n", self.circuit.ybus, "\n")
             print("\nfault_current:\n", fault_current)
             print("\nfault_voltage:\n", fault_voltage)
+
+        if mode == 'line_to_ground':
+            pass
+        if mode == 'line_to_line':
+            pass
+        if mode == 'double-line-to-line':
+            pass
