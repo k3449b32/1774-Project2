@@ -28,6 +28,10 @@ class TransmissionLine:
         self.series_admittance = 1/self.impedance_pu
         self.y_matrix = self.calc_y_matrix() # automatically creating the admittance matrix
 
+        self.z_zero=2.5*self.impedance_pu #calculate zero sequence impedance
+
+        #negative sequence is also the same as regular impedance?????
+
     def calc_impedance(self): #z'=R'+jwL'
         L = (2*(10**-7))*np.log(self.geometry.DEQ / self.bundle.DSL) #calculate distributed inductance in Henrys/meter
         return (self.r + 1j*2*np.pi*Settings.frequency*L*1609.34) * self.length #calcualte distributed impedance, converting to ohms/miles

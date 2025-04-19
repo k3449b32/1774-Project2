@@ -14,8 +14,8 @@ class Generator:
 
         self.sub_admittance=1/self.subtransient_x #sub_adimittance is also zero sequence adimittance
 
-        self.x_positive = x_positive
-        self.x_negative = x_negative
+        self.x_positive = 1j*x_positive*(Settings.base_power/self.mw_setpoint) #initialize values for positive and negative sequence impedance
+        self.x_negative = 1j*x_negative*(Settings.base_power/self.mw_setpoint)
 
 
         self.y_positive = 1/x_positive
