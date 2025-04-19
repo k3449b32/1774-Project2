@@ -20,5 +20,13 @@ class Solution:
         jacobian.compute_jacobian()
 
 
-    def solve_fault(self,bus_name):
-        pass
+    def solve_fault(self,bus_name,mode):
+        self.mode=mode
+
+        if mode == '3_phase_fault':
+            self.circuit.calc_ybus()
+            self.circuit.modify_y_bus()
+            fault_current,fault_voltage = self.circuit.calculate_fault(bus_name)
+            print("\nybus:\n", self.circuit.ybus, "\n")
+            print("\nfault_current:\n", fault_current)
+            print("\nfault_voltage:\n", fault_voltage)
