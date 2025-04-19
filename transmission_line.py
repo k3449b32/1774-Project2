@@ -36,6 +36,11 @@ class TransmissionLine:
         self.y_positive = 1/self.z_positive
         self.y_negative = 1/self.z_negative
 
+
+        #calculate yprim matrices for zero, positive, and negative sequences
+        self.zero_yprim = self.calc_zero_yprim()
+        #positive and negative yprim are the same as the powerflow yprim
+
         #negative sequence is also the same as regular impedance?????
 
     def calc_impedance(self): #z'=R'+jwL'
@@ -56,4 +61,15 @@ class TransmissionLine:
         # Create DataFrame with custom indices and columns
         df_y_matrix = pd.DataFrame(y_matrix, index=[self.bus1.name, self.bus2.name], columns=[self.bus1.name, self.bus2.name])
 
+        return df_y_matrix
+
+    def calc_zero_yprim(self):
+        y_matrix = np.zeros((2, 2), dtype=complex)  # initializing a 2x2 matrix of zeros
+        # creating admittance matrix (will need editing in future for the unknown admittances the buses connect to)
+        y_matrix[0, 0] = self.shunt_admittance / 2 + self.y_zero
+        y_matrix[0, 1] = -self.series_admittance
+        y_matrix[1, 0] = -self.series_admittance
+        y_matrix[1, 1] = self.shunt_admittance / 2 + self.y_zero
+        # Create DataFrame with custom indices and columns
+        df_y_matrix = pd.DataFrame(y_matrix, index=[self.bus1.name, self.bus2.name],columns=[self.bus1.name, self.bus2.name])
         return df_y_matrix

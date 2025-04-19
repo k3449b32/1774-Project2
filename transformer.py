@@ -33,7 +33,7 @@ class Transformer:
         #calculate zero, positive, and negative sequence yprim
         #the positive and negative y_prim are the same as the power flow yprim
         self.zero_yprim=self.zero_yprim()
-        self.positive_yprim = self.y_matrix
+
         self.negative_yprim = self.y_matrix
 
     def calc_impedance(self): #method to calculate impedance
