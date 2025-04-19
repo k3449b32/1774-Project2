@@ -63,19 +63,19 @@ class Transformer:
             yprim_zero[1, 0] = -self.zero_y
             yprim_zero[1, 1] = self.zero_y
 
-        if(self.connection_type == 'y-delta'):
+        elif self.connection_type == 'y-delta':
             yprim_zero[0, 0] = self.y_ground
             yprim_zero[0, 1] = 0
             yprim_zero[1, 0] = 0
             yprim_zero[1, 1] = 0
 
-        if(self.connection_type == 'delta_y'):
+        elif(self.connection_type == 'delta_y'):
             yprim_zero[0, 0] = 0
             yprim_zero[0, 1] = 0
             yprim_zero[1, 0] = 0
             yprim_zero[1, 1] = self.y_ground
 
-        if (self.connection_type == 'delta_delta'):
+        elif (self.connection_type == 'delta_delta'):
             yprim_zero[0, 0] = 0
             yprim_zero[0, 1] = 0
             yprim_zero[1, 0] = 0
