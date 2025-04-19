@@ -6,7 +6,7 @@ from settings import Settings
 class Transformer:
 
 
-    def __init__(self, name: str, bus1: Bus, bus2: Bus, power_rating: float, impedance_percent: float, x_over_r_ratio: float,connection_type,z_ground):
+    def __init__(self, name: str, bus1: Bus, bus2: Bus, power_rating: float, impedance_percent: float, x_over_r_ratio: float,connection_type: str,z_ground: float):
         #connection types are y-y, y-delta, delta-y, delta-delta
         self.name = name
         self.bus1 = bus1

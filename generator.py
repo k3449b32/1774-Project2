@@ -13,13 +13,23 @@ class Generator:
         self.subtransient_x=1j*subtransient_x*(Settings.base_power/self.mw_setpoint) #change the base of the subtransient reactance
 
         self.sub_admittance=1/self.subtransient_x #sub_adimittance is also zero sequence adimittance
+        self.ground_status = is_grounded
 
-        self.x_positive = 1j*x_positive*(Settings.base_power/self.mw_setpoint) #initialize values for positive and negative sequence impedance
+
+        self.ground_z = ground_z
+
+        self.x_positive = (1j*x_positive*+3*1j*ground_z)*(Settings.base_power/self.mw_setpoint) #initialize values for positive and negative sequence impedance
         self.x_negative = 1j*x_negative*(Settings.base_power/self.mw_setpoint)
+#!!!!!!!!!!! is ground impedance multiplied by 1j???????????????
 
+        if self.ground_status == 'no': #if generator is not grounded, y is 0
+            self.y_positive = 0
+        else:
+            self.y_positive = 1 / x_positive
 
-        self.y_positive = 1/x_positive
         self.y_negative = 1/x_negative
+
+
 
         self.zero_yprim = self.calc_y_matrix(self.sub_admittance)
         self.negative_yprim = self.calc_y_matrix(self.y_negative)

@@ -41,7 +41,7 @@ class TransmissionLine:
         self.zero_yprim = self.calc_zero_yprim()
         #positive and negative yprim are the same as the powerflow yprim
 
-        #negative sequence is also the same as regular impedance?????
+
 
     def calc_impedance(self): #z'=R'+jwL'
         L = (2*(10**-7))*np.log(self.geometry.DEQ / self.bundle.DSL) #calculate distributed inductance in Henrys/meter
