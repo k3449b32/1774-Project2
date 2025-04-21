@@ -37,14 +37,11 @@ class Generator:
 
 
     def calc_y_matrix(self,y):
-        y_matrix = np.zeros((2,2), dtype=complex) # initializing a 2x2 matrix of zeros
+        y_matrix = np.zeros((1,1), dtype=complex) # initializing a 2x2 matrix of zeros
         # creating admittance matrix (will need editing in future for the unknown admittances the buses connect to)
         y_matrix[0,0] = y
-        y_matrix[0,1] = -y
-        y_matrix[1,0] = -y
-        y_matrix[1,1] = y
+
         # Create DataFrame with custom indices and columns
-        df_y_matrix = pd.DataFrame(y_matrix, index=[self.bus.name, self.bus2.name], columns=[self.bus1.name, self.bus2.name])
+        df_y_matrix = pd.DataFrame(y_matrix, index=[self.bus.name], columns=[self.bus.name])
         return df_y_matrix
 
-#how to build y_prim matrix!!!!??!!
