@@ -156,18 +156,18 @@ class Circuit:
 
         # Step 2: Create a dictionary to map bus names to indices for easier reference
         bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
-
+        #===============================================================================================================#
         # Step 3: Iterate through all transmission lines
         for line in self.transmission_lines.values():
-            Yprim = line.y_matrix  # Get the primitive admittance matrix
+            Yprim_zero = line.zero_yprim  # Get the primitive admittance matrix
             bus1_idx = bus_indices[line.bus1.name]
             bus2_idx = bus_indices[line.bus2.name]
 
             # Add the elements of the Yprim matrix into the Ybus matrix
-            self.ybus[bus1_idx, bus1_idx] += Yprim.iloc[0, 0]  # Self-admittance for bus1
-            self.ybus[bus1_idx, bus2_idx] += Yprim.iloc[0, 1]  # Mutual admittance between bus1 and bus2
-            self.ybus[bus2_idx, bus1_idx] += Yprim.iloc[1, 0]  # Mutual admittance between bus2 and bus1
-            self.ybus[bus2_idx, bus2_idx] += Yprim.iloc[1, 1]  # Self-admittance for bus2
+            self.zero_ybus[bus1_idx, bus1_idx] += Yprim_zero.iloc[0, 0]  # Self-admittance for bus1
+            self.zero_ybus[bus1_idx, bus2_idx] += Yprim_zero.iloc[0, 1]  # Mutual admittance between bus1 and bus2
+            self.zero_ybus[bus2_idx, bus1_idx] += Yprim_zero.iloc[1, 0]  # Mutual admittance between bus2 and bus1
+            self.zero_ybus[bus2_idx, bus2_idx] += Yprim_zero.iloc[1, 1]  # Self-admittance for bus2
         #==================================================================================================================#
         # Step 4: Iterate through all transformers
         for transformer in self.transformers.values():
