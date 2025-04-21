@@ -188,7 +188,16 @@ class Circuit:
             self.negative_ybus[bus2_idx, bus1_idx] += Yprim_neg.iloc[1, 0]  # Mutual admittance between bus2 and bus1
             self.negative_ybus[bus2_idx, bus2_idx] += Yprim_neg.iloc[1, 1]  # Self-admittance for bus2
         #================================================================================================================#
+        #iterate through all generators
+        for generator in self.generators.values(): #iterate through the generator dictionary
+            bus1_idx = bus_indices[generator.bus.name] #obtain the bus for each generator, and modify the corresponding position in the y matrix
+            Yprim_zero = generator.zero_yprim()
+            Yprim_neg = generator.negative_yprim()
 
+            self.zero_ybus[bus1_idx, bus1_idx] += Yprim_zero
+            self.negative_ybus[bus1_idx, bus1_idx] += Yprim_neg
+
+        #================================================================================================================#
 
         # Step 5: Numerical stability check (ensure no singularities)
         if np.any(np.diag(self.zero_ybus) == 0):  # If any diagonal element is zero, it indicates a singularity
