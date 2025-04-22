@@ -28,6 +28,7 @@ class Circuit:
         self.real_power = {}
         self.reactive_power = {}
         self.voltages = {}
+        self.radians = 0
 
     def add_bus(self, name: str, bus_kv: float):
         if name in self.buses:
@@ -172,8 +173,15 @@ class Circuit:
 
         for k, bus_k in enumerate(buses.keys()):  # Iterate through each bus
             for n, bus_n in enumerate(buses.keys()):  # Iterate through mutual admittances
-                delta_k = delta[k] * np.pi/180
-                delta_n = delta[n] * np.pi/180
+                if self.radians == 0:               # Convert to radians
+                    delta_k = delta[k] * np.pi / 180
+                    delta_n = delta[n] * np.pi / 180
+                else:                               # Already in radians
+                    delta_k = delta[k]
+                    delta_n = delta[n]
+                #print(
+                    #f"bus_k={bus_k:<5} bus_n={bus_n:<5}  v[k]={v[k]:.5f}  v[n]={v[n]:.5f}  |Yₖₙ|={yabs.loc[bus_k, bus_n]:.5f}  Δk={delta_k:.5f}  Δn={delta_n:.5f}  θₖₙ={ydelta.loc[bus_k, bus_n]:.5f}",
+                    #np.cos(delta_k - delta_n - ydelta.loc[bus_k, bus_n]))
                 P[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.cos(delta_k - delta_n - ydelta.loc[bus_k, bus_n])
                 Q[k] += v[k] * yabs.loc[bus_k, bus_n] * v[n] * np.sin(delta_k - delta_n - ydelta.loc[bus_k, bus_n])
 
@@ -198,13 +206,13 @@ class Circuit:
                 continue
 
             # Compute total generator power at the bus
-            P_gen = sum(gen.mw_setpoint for gen in self.generators.values() if gen.bus.name == bus_name)
+            P_gen = sum(gen.mw_setpoint for gen in self.generators.values() if gen.bus.name == bus_name)/100
 
             # Compute total load power at the bus (without mistakenly including generators)
-            P_load = sum(-load.real_power for load in self.loads.values() if load.bus.name == bus_name)
+            P_load = sum(-load.real_power for load in self.loads.values() if load.bus.name == bus_name)/100
 
             # Calculate the power mismatch
-            mismatch = P_gen/100 - P_load/100 - P[i]
+            mismatch = P_gen + P_load - P[i]
 
             # Ensure correct sign based on bus type
             if (buses[bus_name].bus_type == "PQ" or P_gen == 0) and mismatch != 0:
@@ -214,8 +222,8 @@ class Circuit:
 
             if bus.bus_type == "PQ":
                 # Reactive power mismatch only for PQ buses
-                Q_load = self.reactive_power.get(bus_name, 0)  # Get reactive load power
-                delta_Q.loc[bus_name, "Delta_Q"] = Q_load/100 - Q[i]  # No generator Q, only loads
+                Q_load = self.reactive_power.get(bus_name, 0)/100  # Get reactive load power
+                delta_Q.loc[bus_name, "Delta_Q"] = Q_load - Q[i]  # No generator Q, only loads
 
         # Concatenate mismatch vectors for numerical solution
         mismatch_df = pd.DataFrame({

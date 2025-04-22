@@ -18,6 +18,7 @@ class Bus:
         # Keeping an index of all bus instances
         self.index = Bus.counter
         Bus.counter += 1
+        self.radians = 0
 
     def set_voltage_and_delta(self, voltage: float, delta: float):
         self.vpu = voltage
