@@ -160,27 +160,36 @@ class Circuit:
         # Step 3: Iterate through all transmission lines
         for line in self.transmission_lines.values():
             Yprim_zero = line.zero_yprim  # Get the primitive admittance matrix
+            Yprim = line.y_matrix
             bus1_idx = bus_indices[line.bus1.name]
             bus2_idx = bus_indices[line.bus2.name]
 
-            # Add the elements of the Yprim matrix into the Ybus matrix
+            # Add the elements of the zero Yprim matrix into the zero Ybus matrix
             self.zero_ybus[bus1_idx, bus1_idx] += Yprim_zero.iloc[0, 0]  # Self-admittance for bus1
             self.zero_ybus[bus1_idx, bus2_idx] += Yprim_zero.iloc[0, 1]  # Mutual admittance between bus1 and bus2
             self.zero_ybus[bus2_idx, bus1_idx] += Yprim_zero.iloc[1, 0]  # Mutual admittance between bus2 and bus1
             self.zero_ybus[bus2_idx, bus2_idx] += Yprim_zero.iloc[1, 1]  # Self-admittance for bus2
+
+            # add the elements of the yprim matrix into the negative ybus matrix
+            self.negative_ybus[bus1_idx, bus1_idx] += Yprim.iloc[0, 0]  # Self-admittance for bus1
+            self.negative_ybus[bus1_idx, bus2_idx] += Yprim.iloc[0, 1]  # Mutual admittance between bus1 and bus2
+            self.negative_ybus[bus2_idx, bus1_idx] += Yprim.iloc[1, 0]  # Mutual admittance between bus2 and bus1
+            self.negative_ybus[bus2_idx, bus2_idx] += Yprim.iloc[1, 1]  # Self-admittance for bus2
+
+
         #==================================================================================================================#
         # Step 4: Iterate through all transformers
         for transformer in self.transformers.values():
-            Yprim_zero = transformer.zero_yprim()  # Get the primitive admittance matrix
-            Yprim_neg = transformer.negative_yprim()
+            Yprim_zero = transformer.zero_yprim  # Get the primitive admittance matrix
+            Yprim_neg = transformer.negative_yprim
             bus1_idx = bus_indices[transformer.bus1.name]
             bus2_idx = bus_indices[transformer.bus2.name]
 
             # Add the elements of the Yprim matrix into the Ybus matrix
-            self.zero_ybus[bus1_idx, bus1_idx] += Yprim_zero.iloc[0, 0]  # Self-admittance for bus1
-            self.zero_ybus[bus1_idx, bus2_idx] += Yprim_zero.iloc[0, 1]  # Mutual admittance between bus1 and bus2
-            self.zero_ybus[bus2_idx, bus1_idx] += Yprim_zero.iloc[1, 0]  # Mutual admittance between bus2 and bus1
-            self.zero_ybus[bus2_idx, bus2_idx] += Yprim_zero.iloc[1, 1]  # Self-admittance for bus2
+            self.zero_ybus[bus1_idx, bus1_idx] += Yprim_zero[0, 0]  # Self-admittance for bus1
+            self.zero_ybus[bus1_idx, bus2_idx] += Yprim_zero[0, 1]  # Mutual admittance between bus1 and bus2
+            self.zero_ybus[bus2_idx, bus1_idx] += Yprim_zero[1, 0]  # Mutual admittance between bus2 and bus1
+            self.zero_ybus[bus2_idx, bus2_idx] += Yprim_zero[1, 1]  # Self-admittance for bus2
 
             # Add the elements of the Yprim matrix into the Ybus matrix
             self.negative_ybus[bus1_idx, bus1_idx] += Yprim_neg.iloc[0, 0]  # Self-admittance for bus1
@@ -191,11 +200,11 @@ class Circuit:
         #iterate through all generators
         for generator in self.generators.values(): #iterate through the generator dictionary
             bus1_idx = bus_indices[generator.bus.name] #obtain the bus for each generator, and modify the corresponding position in the y matrix
-            Yprim_zero = generator.zero_yprim()
-            Yprim_neg = generator.negative_yprim()
+            Yprim_zero = generator.zero_yprim
+            Yprim_neg = generator.negative_yprim
 
-            self.zero_ybus[bus1_idx, bus1_idx] += Yprim_zero
-            self.negative_ybus[bus1_idx, bus1_idx] += Yprim_neg
+            self.zero_ybus[bus1_idx, bus1_idx] += Yprim_zero.iloc[0,0]
+            self.negative_ybus[bus1_idx, bus1_idx] += Yprim_neg.iloc[0,0]
 
         #================================================================================================================#
 

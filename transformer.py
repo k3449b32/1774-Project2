@@ -32,7 +32,7 @@ class Transformer:
 
         #calculate zero, positive, and negative sequence yprim
         #the positive and negative y_prim are the same as the power flow yprim
-        self.zero_yprim=self.zero_yprim()
+        self.zero_yprim=self.create_zero_yprim()
 
         self.negative_yprim = self.y_matrix
 
@@ -55,7 +55,7 @@ class Transformer:
 
         return df_y_matrix
 
-    def zero_yprim(self):
+    def create_zero_yprim(self):
         yprim_zero = np.zeros((2,2), dtype=complex)
         if(self.connection_type == 'y-y'):
             yprim_zero[0, 0] = self.zero_y
@@ -84,4 +84,5 @@ class Transformer:
         else:
             raise ValueError("Invalid transformer connection type")
 
+        return yprim_zero
 
