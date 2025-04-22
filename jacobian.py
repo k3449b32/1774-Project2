@@ -28,9 +28,9 @@ class Jacobian:
         voltages_angles = {bus: self.circuit.get_voltages(self.buses, bus) for bus in self.bus_order}
         self.voltages = np.array([voltages_angles[bus][0] for bus in self.bus_order])
         if self.circuit.radians == 0:
-            self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order]) * np.pi / 180  # delta
+            self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order]) * np.pi / 180  # convert to radians
         else:
-            self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order])
+            self.angles = np.array([voltages_angles[bus][1] for bus in self.bus_order]) # already in radians
 
     def compute_jacobian(self):
         """Compute the full Jacobian matrix and return it as a labeled pandas DataFrame."""
@@ -100,7 +100,7 @@ class Jacobian:
         J2 = np.zeros((len(self.non_slack_buses), len(self.pq_buses)))
         y_abs = np.abs(self.ybus)
         y_angle = np.angle(self.ybus)
-
+        S = 0
         for i, bus_i in enumerate(self.non_slack_buses):
             idx_i = self.bus_order.index(bus_i)
             for j, bus_j in enumerate(self.pq_buses):
@@ -108,31 +108,27 @@ class Jacobian:
 
                 if idx_i == idx_j:
                     total = 0
-                    print(f"\n---- Debug for Bus {bus_i} (idx {idx_i}) ----")
-                    print(f"Voltage[{idx_i}] = {self.voltages[idx_i]}")
                     for m in range(len(self.bus_order)):
                         if m != idx_i:
-                            term_voltage = self.voltages[idx_i]
-                            term_y_abs = y_abs[idx_i, m]
+                            I = self.voltages[idx_i] * y_abs[idx_i,idx_i]*np.cos(y_angle[idx_i,idx_i])
+                            term_voltage = self.voltages[m] #GOOD
+                            term_y_abs = y_abs[idx_i, m] #
                             angle_diff = self.angles[idx_i] - self.angles[m]
                             theta = y_angle[idx_i, m]
                             cos_term = np.cos(angle_diff - theta)
                             term = term_voltage * term_y_abs * cos_term
 
-                            print(f"  m = {m}: V = {term_voltage:.4f}, |Y| = {term_y_abs:.4f}, "
-                                  f"Δδ = {angle_diff:.4f}, θ = {theta:.4f}, cos = {cos_term:.4f}, "
-                                  f"term = {term:.4f}")
-
                             total += term
-
-                    print(f"  >>> SUM = {total:.6f}")
-                    J2[i, j] = total
+                    Vk = self.voltages[idx_i]
+                    Gkk = np.real(self.ybus[idx_i, idx_i])
+                    diag_term = Vk * Gkk
+                    J2[i, j] = 2 * diag_term + total
 
                 else:
-                    J2[i, j] = -self.voltages[idx_i] * y_abs[idx_i, idx_j] * np.cos(
-                        self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
+                    J2[i, j] = -(-self.voltages[idx_i] * y_abs[idx_i, idx_j] * np.cos(
+                        self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j]))
 
-        return -J2
+        return J2
 
     def compute_J3(self):
         """Compute dQ/dδ (J3) for PQ buses (rows) and non-slack buses (columns)
@@ -172,16 +168,27 @@ class Jacobian:
                 idx_j = self.bus_order.index(bus_j)
 
                 if idx_i == idx_j:
-                    # Flip sign for PowerWorld convention
-                    J4[i, j] = -sum(
-                        self.voltages[idx_i] * y_abs[idx_i, m] *
-                        np.sin(self.angles[idx_i] - self.angles[m] - y_angle[idx_i, m])
-                        for m in range(len(self.bus_order)) if m != idx_i
-                    )
+                    total = 0
+                    for m in range(len(self.bus_order)):
+                        if m != idx_i:
+                            Vm = self.voltages[m]
+                            Ykm = y_abs[idx_i, m]
+                            angle_diff = self.angles[idx_i] - self.angles[m]
+                            theta = y_angle[idx_i, m]
+                            sin_term = np.sin(angle_diff - theta)
+                            term = Vm * Ykm * sin_term
+
+                            total += term
+
+                    Vk = self.voltages[idx_i]
+                    Bkk = -np.imag(self.ybus[idx_i, idx_i])
+                    diag_term = Vk * Bkk
+                    J4[i, j] = total + 2*diag_term
+
                 else:
-                    # Off-diagonal elements stay the same
                     J4[i, j] = self.voltages[idx_i] * y_abs[idx_i, idx_j] * np.sin(
                         self.angles[idx_i] - self.angles[idx_j] - y_angle[idx_i, idx_j])
 
         return J4
+
 

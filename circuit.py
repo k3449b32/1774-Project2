@@ -172,10 +172,10 @@ class Circuit:
 
         for k, bus_k in enumerate(buses.keys()):  # Iterate through each bus
             for n, bus_n in enumerate(buses.keys()):  # Iterate through mutual admittances
-                if self.radians == 0:
+                if self.radians == 0:               # Convert to radians
                     delta_k = delta[k] * np.pi / 180
                     delta_n = delta[n] * np.pi / 180
-                else:
+                else:                               # Already in radians
                     delta_k = delta[k]
                     delta_n = delta[n]
                 #print(
