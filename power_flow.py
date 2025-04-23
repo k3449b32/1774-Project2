@@ -9,7 +9,7 @@ class Power_Flow:
         self.circuit = circuit
         self.jacobian = jacobian
 
-    def solve(self, buses, ybus, tol=10**-9, max_iter=50):
+    def do_power_flow(self, buses, ybus, tol=10 ** -9, max_iter=50):
         converged = False
 
         for iteration in range(max_iter):

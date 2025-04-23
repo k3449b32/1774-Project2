@@ -19,6 +19,10 @@ class TransmissionLine:
         self.length = length
 
         z_base = self.bus1.base_kv ** 2 / Settings.base_power #calculate the z_base
+        
+        self.z1 = z1 if z1 else self.calc_impedance()
+        self.z2 = z2 if z2 else self.z1
+        self.z0 = z0 if z0 else self.z1 * 3  # Usually Z0 > Z1,Z2
 
         self.e_nought = 8.854187817*10**-12 #value of e nought
         self.r = self.bundle.conductor.resistance/self.bundle.num_conductors #obtain resistance of line, assuming ohms/mile
@@ -47,3 +51,14 @@ class TransmissionLine:
         df_y_matrix = pd.DataFrame(y_matrix, index=[self.bus1.name, self.bus2.name], columns=[self.bus1.name, self.bus2.name])
 
         return df_y_matrix
+
+    def y_prim(self, sequence):
+        z_base = self.bus1.base_kv ** 2 / Settings.base_power
+        if sequence == "positive":
+            return 1 / (self.z1 / z_base)
+        elif sequence == "negative":
+            return 1 / (self.z2 / z_base)
+        elif sequence == "zero":
+            return 1 / (self.z0 / z_base)
+        else:
+            raise ValueError("Invalid sequence")

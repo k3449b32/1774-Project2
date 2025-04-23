@@ -1,5 +1,6 @@
 from circuit import Circuit
 from jacobian import Jacobian
+from solution import Solution
 from power_flow import Power_Flow
 import numpy as np
 
@@ -84,12 +85,17 @@ print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circ
 jacobian = Jacobian(circuit1)
 print(jacobian.compute_jacobian())
 
-# Solve the power flow and print results
-powerflow = Power_Flow(circuit1, jacobian)
 print("\n--- Solving Power Flow ---")
-powerflow.solve(circuit1.buses, circuit1.ybus)
-print(jacobian.compute_jacobian())
-print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
+solution = Solution(circuit1)
+solution.do_power_flow()
+
+
+# Solve the power flow and print results
+#powerflow = Power_Flow(circuit1, jacobian)
+#print("\n--- Solving Power Flow ---")
+#powerflow.do_power_flow(circuit1.buses, circuit1.ybus)
+#print(jacobian.compute_jacobian())
+#print("\nPower Mismatch\n", circuit1.compute_power_mismatch(circuit1.buses, circuit1.ybus))
 
 
 # injecting voltages and angles for buses
