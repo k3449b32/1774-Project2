@@ -56,12 +56,12 @@ class Circuit:
         else:
             self.geometry[name] = Geometry(name, xa, ya, xb, yb, xc, yc)
 
-    def add_transformer(self, name: str, bus1: str, bus2: str, power_rating: float, impedance_percent: float, x_over_r_ratio: float, connection_type: str,z_ground: float):
+    def add_transformer(self, name: str, bus1: str, bus2: str, power_rating: float, impedance_percent: float, x_over_r_ratio: float, connection_type: str,z_ground: float,is_grounded: str):
         if name in self.transformers:
             raise ValueError("Transformer is already in circuit")
         else:
             self.transformers[name] = Transformer(name, self.buses[bus1], self.buses[bus2], power_rating,
-                                                  impedance_percent, x_over_r_ratio, connection_type,z_ground)
+                                                  impedance_percent, x_over_r_ratio, connection_type,z_ground,is_grounded)
 
     def add_transmission_line(self, name: str, bus1: str, bus2: str, bundle: str, geometry: str, length: float):
         if name in self.transmission_lines:
@@ -216,8 +216,8 @@ class Circuit:
             raise ValueError("Ybus matrix has a singularity (zero diagonal entry). Please check bus connections.")
 
         # Step 6: Convert Ybus into a pandas DataFrame with bus names as row and column indices
-        self.zero_ybus = pd.DataFrame(self.ybus, index=self.buses.keys(), columns=self.buses.keys())
-        self.negative_ybus = pd.DataFrame(self.ybus, index=self.buses.keys(), columns=self.buses.keys())
+        self.zero_ybus = pd.DataFrame(self.zero_ybus, index=self.buses.keys(), columns=self.buses.keys())
+        self.negative_ybus = pd.DataFrame(self.negative_ybus, index=self.buses.keys(), columns=self.buses.keys())
 
         # Now, the Ybus is stored as a pandas DataFrame with proper bus names
 

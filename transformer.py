@@ -6,7 +6,7 @@ from settings import Settings
 class Transformer:
 
 
-    def __init__(self, name: str, bus1: Bus, bus2: Bus, power_rating: float, impedance_percent: float, x_over_r_ratio: float,connection_type: str,z_ground: float):
+    def __init__(self, name: str, bus1: Bus, bus2: Bus, power_rating: float, impedance_percent: float, x_over_r_ratio: float,connection_type: str,z_ground: float, is_grounded: str):
         #connection types are y-y, y-delta, delta-y, delta-delta
         self.name = name
         self.bus1 = bus1
@@ -22,11 +22,16 @@ class Transformer:
         self.negative_z = self.zseries
         self.zero_z = 3*self.z_ground+self.zseries
 
+        #calculate, positive, negative, and zero admittances
         self.positive_y=1/self.positive_z
         self.negative_y=1/self.negative_z
-        self.zero_y=1/self.zero_z
-        self.y_ground = 1/self.z_ground
 
+        if is_grounded == "no":
+            self.zero_y = 0
+        else:
+            self.zero_y = 1 / (self.zero_z+3*self.z_ground)
+
+        #get the connection type from constructor
         self.connection_type=connection_type
 
 
@@ -64,16 +69,16 @@ class Transformer:
             yprim_zero[1, 1] = self.zero_y
 
         elif self.connection_type == 'y-delta':
-            yprim_zero[0, 0] = self.y_ground
+            yprim_zero[0, 0] = self.zero_y
             yprim_zero[0, 1] = 0
             yprim_zero[1, 0] = 0
             yprim_zero[1, 1] = 0
 
-        elif(self.connection_type == 'delta_y'):
+        elif(self.connection_type == 'delta-y'):
             yprim_zero[0, 0] = 0
             yprim_zero[0, 1] = 0
             yprim_zero[1, 0] = 0
-            yprim_zero[1, 1] = self.y_ground
+            yprim_zero[1, 1] = self.zero_y
 
         elif (self.connection_type == 'delta_delta'):
             yprim_zero[0, 0] = 0
