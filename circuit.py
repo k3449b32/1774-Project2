@@ -8,6 +8,7 @@ from transformer import Transformer
 from conductor import Conductor
 from generator import Generator
 from load import Load
+from settings import Settings
 
 class Circuit:
 
@@ -361,38 +362,46 @@ class Circuit:
         ordered_buses = list(self.buses.keys())
         b_idx = ordered_buses.index(faulted_bus)
 
-        # Extract diagonal elements only
-        Y0nn = self.zero_ybus.loc[faulted_bus, faulted_bus]
-        Y1nn = self.negative_ybus.loc[faulted_bus, faulted_bus]
-        Y2nn = self.negative_ybus.loc[faulted_bus, faulted_bus]
+        Y0_np = np.array([
+            [self.zero_ybus.loc[bi, bj] for bj in ordered_buses]
+            for bi in ordered_buses
+        ], dtype=np.complex128)
+        Y1_np = np.array([
+            [self.negative_ybus.loc[bi, bj] for bj in ordered_buses]
+            for bi in ordered_buses
+        ], dtype=np.complex128)
+        Y2_np = np.array([
+            [self.negative_ybus.loc[bi, bj] for bj in ordered_buses]
+            for bi in ordered_buses
+        ], dtype=np.complex128)
 
-        print(f"Y0_np[{b_idx},{b_idx}] =", Y0nn)
-        print("Expected 1 / Y0 =", 1 / Y0nn)
+        # Just invert diagonal terms directly — all in per-unit already
+        Z0_diag_inv = 1 / Y0_np[b_idx][b_idx]
+        Z1_diag_inv = 1 / Y1_np[b_idx][b_idx]
+        Z2_diag_inv = 1 / Y2_np[b_idx][b_idx]
 
-        # Use reciprocal of diagonal only
-        Z0n = 1 / Y0nn
-        Z1n = 1 / Y1nn
-        Z2n = 1 / Y2nn
+        print(f"Y0_np[{b_idx},{b_idx}] = {Y0_np[b_idx][b_idx]}")
+        print(f"Expected 1 / Y0 = {Z0_diag_inv}")
+        print(f"Z0[Bus] = {Z0_diag_inv}")
 
-        print(f"Z0[{faulted_bus}] =", Z0n)
-
-        # Prefault voltage
         V_prefault = self.buses[faulted_bus].vpu * np.exp(1j * np.deg2rad(self.buses[faulted_bus].delta))
+        print(f"V_prefault = {V_prefault}")
 
         if fault_type == "slg":
-            denom = Z0n + Z1n + Z2n + 3 * Zf
+            denom = Z0_diag_inv + Z1_diag_inv + Z2_diag_inv + 3 * Zf
             I_seq = V_prefault / denom
             I0 = I1 = I2 = I_seq
 
         elif fault_type == "ll":
-            denom = Z1n + Z2n + Zf
+            denom = Z1_diag_inv + Z2_diag_inv + Zf
             I1 = V_prefault / denom
             I2 = -I1
             I0 = 0
 
         elif fault_type == "dlg":
-            num = V_prefault * (Z1n + Z2n + Zf)
-            denom = Z0n * (Z1n + Z2n + Zf) + Z1n * Z2n + Zf * (Z1n + Z2n)
+            num = V_prefault * (Z1_diag_inv + Z2_diag_inv + Zf)
+            denom = Z0_diag_inv * (Z1_diag_inv + Z2_diag_inv + Zf) + Z1_diag_inv * Z2_diag_inv + Zf * (
+                        Z1_diag_inv + Z2_diag_inv)
             I0 = num / denom
             I1 = I0
             I2 = I0
@@ -400,15 +409,19 @@ class Circuit:
         else:
             raise ValueError("Invalid fault type")
 
-        # Sequence to phase conversion
+        # Convert sequence to phase
         a = np.exp(2j * np.pi / 3)
-        T_inv = np.array([[1, 1, 1],
-                          [1, a ** 2, a],
-                          [1, a, a ** 2]])
+        T_inv = np.array([
+            [1, 1, 1],
+            [1, a ** 2, a],
+            [1, a, a ** 2]
+        ])
         Iabc = T_inv @ np.array([I0, I1, I2])
 
         print(f"\nAsymmetrical Fault Currents ({fault_type.upper()}) at {faulted_bus}:")
         for phase, val in zip(['A', 'B', 'C'], Iabc):
-            print(f"Phase {phase}: {abs(val):.4f} p.u., ∠ {np.angle(val, deg=True):.2f}°")
+            mag = abs(val)
+            ang = np.angle(val, deg=True)
+            print(f"Phase {phase}: {mag:.4f} p.u., ∠ {ang:.2f}°")
 
         return {"Ia": Iabc[0], "Ib": Iabc[1], "Ic": Iabc[2]}, (I0, I1, I2)
