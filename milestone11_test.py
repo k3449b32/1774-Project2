@@ -1,5 +1,6 @@
 from circuit import Circuit
 from jacobian import Jacobian
+import numpy as np
 
 # Creating Circuit for 7-bus powerworld system
 circuit1 = Circuit("circuit1")
@@ -77,3 +78,11 @@ print("\nnegative ybus:\n", circuit1.negative_ybus,"\n")
 print("\nzero ybus:\n", circuit1.zero_ybus,"\n")
 print("\nfault_current:\n",fault_current)
 print("\nfault_voltage:\n",fault_voltage)
+
+# === Run asymmetrical fault ===
+asym_fault_current, sequence_currents = circuit1.calculate_asym_fault("slg", "Bus3", Zf=0.0)
+
+print("\nAsymmetrical Fault Currents (SLG) at Bus3:")
+print(f"Ia: {asym_fault_current['Ia']}")
+print(f"Ib: {asym_fault_current['Ib']}")
+print(f"Ic: {asym_fault_current['Ic']}")

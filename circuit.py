@@ -343,15 +343,72 @@ class Circuit:
         znn = self.zbus.loc[faulted_bus, faulted_bus]
         i_f = 1.0 / znn
 
-
         for idx, bus_name in enumerate(self.buses):
 
             zkn = self.zbus.loc[bus_name, faulted_bus]
 
-
-
             e_k=1-zkn/znn
             fault_voltage[idx]=e_k
 
-
         return i_f,fault_voltage
+
+    def calculate_asym_fault(self, fault_type, faulted_bus, Zf=0.0):
+        import numpy as np
+        import pandas as pd
+
+        print("\n>>> ENTERED calculate_asym_fault")
+
+        ordered_buses = list(self.buses.keys())
+        b_idx = ordered_buses.index(faulted_bus)
+
+        # Extract diagonal elements only
+        Y0nn = self.zero_ybus.loc[faulted_bus, faulted_bus]
+        Y1nn = self.negative_ybus.loc[faulted_bus, faulted_bus]
+        Y2nn = self.negative_ybus.loc[faulted_bus, faulted_bus]
+
+        print(f"Y0_np[{b_idx},{b_idx}] =", Y0nn)
+        print("Expected 1 / Y0 =", 1 / Y0nn)
+
+        # Use reciprocal of diagonal only
+        Z0n = 1 / Y0nn
+        Z1n = 1 / Y1nn
+        Z2n = 1 / Y2nn
+
+        print(f"Z0[{faulted_bus}] =", Z0n)
+
+        # Prefault voltage
+        V_prefault = self.buses[faulted_bus].vpu * np.exp(1j * np.deg2rad(self.buses[faulted_bus].delta))
+
+        if fault_type == "slg":
+            denom = Z0n + Z1n + Z2n + 3 * Zf
+            I_seq = V_prefault / denom
+            I0 = I1 = I2 = I_seq
+
+        elif fault_type == "ll":
+            denom = Z1n + Z2n + Zf
+            I1 = V_prefault / denom
+            I2 = -I1
+            I0 = 0
+
+        elif fault_type == "dlg":
+            num = V_prefault * (Z1n + Z2n + Zf)
+            denom = Z0n * (Z1n + Z2n + Zf) + Z1n * Z2n + Zf * (Z1n + Z2n)
+            I0 = num / denom
+            I1 = I0
+            I2 = I0
+
+        else:
+            raise ValueError("Invalid fault type")
+
+        # Sequence to phase conversion
+        a = np.exp(2j * np.pi / 3)
+        T_inv = np.array([[1, 1, 1],
+                          [1, a ** 2, a],
+                          [1, a, a ** 2]])
+        Iabc = T_inv @ np.array([I0, I1, I2])
+
+        print(f"\nAsymmetrical Fault Currents ({fault_type.upper()}) at {faulted_bus}:")
+        for phase, val in zip(['A', 'B', 'C'], Iabc):
+            print(f"Phase {phase}: {abs(val):.4f} p.u., ∠ {np.angle(val, deg=True):.2f}°")
+
+        return {"Ia": Iabc[0], "Ib": Iabc[1], "Ic": Iabc[2]}, (I0, I1, I2)
