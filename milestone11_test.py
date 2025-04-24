@@ -1,5 +1,6 @@
 from circuit import Circuit
 from jacobian import Jacobian
+from power_flow import Power_Flow
 import numpy as np
 
 # Creating Circuit for 7-bus powerworld system
@@ -68,10 +69,17 @@ print("\nLine 6 Impedance pu: ", circuit1.transmission_lines["Line 6"].impedance
       "\nShunt Admittance pu: ", circuit1.transmission_lines["Line 6"].shunt_admittance, "\n",circuit1.transmission_lines["Line 6"].y_matrix)
 
 circuit1.calc_ybus()
+jacobian = Jacobian(circuit1)
+print(jacobian.compute_jacobian())
+
+# Solve the power flow and print results
+powerflow = Power_Flow(circuit1, jacobian)
+print("\n--- Solving Power Flow ---")
+powerflow.solve(circuit1.buses, circuit1.ybus)
+
 circuit1.modify_y_bus()
 circuit1.calc_zero_negative_ybus()
 fault_current,fault_voltage = circuit1.calculate_fault("Bus1")
-
 
 print("\npositive ybus:\n",circuit1.ybus,"\n")
 print("\nnegative ybus:\n", circuit1.negative_ybus,"\n")
