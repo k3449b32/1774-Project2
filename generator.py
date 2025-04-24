@@ -17,14 +17,19 @@ class Generator:
         self.sub_admittance=1/self.subtransient_x #
         self.ground_status = is_grounded
 
+        if self.bus.bus_type == 'slack' or self.bus.bus_type == 'PV':
+            self.z_negative = 1j * 1.0  # force X2 = 1.0 on slack
+        else:
+            self.z_negative = 1j * z_negative * (Settings.base_power / self.mw_setpoint)
 
-        self.ground_z = ground_z*(Settings.base_power/self.mw_setpoint)
-
-        self.z_zero = (1j*z_zero)*(Settings.base_power/self.mw_setpoint) #initialize values for zero and negative sequence impedance
-        self.z_negative = 1j*z_negative*(Settings.base_power/self.mw_setpoint)
-
-        #the total zero sequence admittance is z_zero + 3 * grounding impedance
-        self.z_zero_total = z_zero + 3*self.ground_z
+        if self.bus.bus_type == "slack" or self.bus.bus_type == "PV":
+            self.z_zero = 1j * 1.0
+            self.ground_z = 1j * 0.0
+            self.z_zero_total = self.z_zero
+        else:
+            self.z_zero = 1j * z_zero
+            self.ground_z = 1j * ground_z
+            self.z_zero_total = self.z_zero + 3 * self.ground_z
 #!!!!!!!!!!! is ground impedance multiplied by 1j???????????????
 
         if self.ground_status == 'no': #if generator is not grounded, y will be zero
@@ -34,8 +39,6 @@ class Generator:
 
         #calculate the negative sequence admittance
         self.y_negative = 1/self.z_negative
-
-
 
         self.zero_yprim = self.calc_y_matrix(self.y_zero)
         self.negative_yprim = self.calc_y_matrix(self.y_negative)

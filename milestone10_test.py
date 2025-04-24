@@ -1,14 +1,6 @@
 from circuit import Circuit
 from jacobian import Jacobian
 
-
-
-
-
-
-
-
-
 # Creating Circuit for 7-bus powerworld system
 circuit1 = Circuit("circuit1")
 
@@ -31,8 +23,8 @@ circuit1.add_geometry("Geometry 1", 0, 0, 19.5, 0, 39, 0)
 circuit1.add_bundle("Bundle 1", 2, 1.5, circuit1.conductors["Partridge"].name)
 
 # Creating the transformers used in the circuit
-circuit1.add_transformer("T1", circuit1.buses["Bus1"].name, circuit1.buses["Bus2"].name, 125, 8.5, 10,'delta-y',0.0019,'yes')
-circuit1.add_transformer("T2", circuit1.buses["Bus6"].name, circuit1.buses["Bus7"].name, 200, 10.5, 12,'y-delta',0.001,'no')
+circuit1.add_transformer("T1", circuit1.buses["Bus1"].name, circuit1.buses["Bus2"].name, 125, 8.5, 10,'delta-y',(100/230**2),'yes')
+circuit1.add_transformer("T2", circuit1.buses["Bus6"].name, circuit1.buses["Bus7"].name, 200, 10.5, 12,'y-delta',0,'no')
 
 # Printing the values for the transformers
 print("T1 Impedance pu: ", circuit1.transformers["T1"].zseries, "Admittance: ", circuit1.transformers["T1"].yseries)
@@ -54,8 +46,8 @@ circuit1.add_transmission_line("Line 5", circuit1.buses["Bus5"].name, circuit1.b
 circuit1.add_transmission_line("Line 6", circuit1.buses["Bus4"].name, circuit1.buses["Bus5"].name,
                                circuit1.bundles["Bundle 1"].name, circuit1.geometry["Geometry 1"].name, 35)
 
-circuit1.add_generator_element("Generator 1", circuit1.buses["Bus1"].name, 100, circuit1.buses["Bus1"].vpu,0.12,.05,0.14,0,'yes' )
-circuit1.add_generator_element("Generator 2", circuit1.buses["Bus7"].name, 200, circuit1.buses["Bus7"].vpu, 0.12,0.05,0.14,0.25,'yes')
+circuit1.add_generator_element("Generator 1", circuit1.buses["Bus1"].name, 100, circuit1.buses["Bus1"].vpu,0.12,0.05,0.14,0,'yes' )
+circuit1.add_generator_element("Generator 2", circuit1.buses["Bus7"].name, 200, circuit1.buses["Bus7"].vpu, 0.12,0.05,0.14,(100/18**2),'yes')
 
 circuit1.add_load_element("Load 1", circuit1.buses["Bus3"].name, 110, 50)
 circuit1.add_load_element("Load 2", circuit1.buses["Bus4"].name, 100, 70)
