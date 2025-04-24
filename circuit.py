@@ -8,6 +8,7 @@ from transformer import Transformer
 from conductor import Conductor
 from generator import Generator
 from load import Load
+from settings import Settings
 
 class Circuit:
 
@@ -57,11 +58,12 @@ class Circuit:
         else:
             self.geometry[name] = Geometry(name, xa, ya, xb, yb, xc, yc)
 
-    def add_transformer(self, name: str, bus1: str, bus2: str, power_rating: float, impedance_percent: float, x_over_r_ratio: float):
+    def add_transformer(self, name: str, bus1: str, bus2: str, power_rating: float, impedance_percent: float, x_over_r_ratio: float, connection_type: str,z_ground: float,is_grounded: str):
         if name in self.transformers:
             raise ValueError("Transformer is already in circuit")
         else:
-            self.transformers[name] = Transformer(name, self.buses[bus1], self.buses[bus2], power_rating, impedance_percent, x_over_r_ratio)
+            self.transformers[name] = Transformer(name, self.buses[bus1], self.buses[bus2], power_rating,
+                                                  impedance_percent, x_over_r_ratio, connection_type,z_ground,is_grounded)
 
     def add_transmission_line(self, name: str, bus1: str, bus2: str, bundle: str, geometry: str, length: float):
         if name in self.transmission_lines:
@@ -82,21 +84,23 @@ class Circuit:
             self.reactive_power[bus] -= reactive_power
         self.calc_ybus()
 
-
-    def add_generator_element(self, name: str, bus: str, real_power: float, per_unit_voltage: float, subtransient_x):
+    def add_generator_element(self, name: str, bus: str, real_power: float, per_unit_voltage: float,
+                              subtransient_x, positive_x, negative_x, z_ground, is_grounded):
         if name in self.generators:
             raise ValueError("Generator is already in circuit")
-        self.generators[name] = Generator(name, self.buses[bus], real_power, per_unit_voltage, subtransient_x )
-        if bus not in self.real_power:
-            self.real_power[bus] = 0  # Initialize if missing
-        self.real_power[bus] += real_power
-        # If there is no generator made the first generator is a slack generator and the boolean variable changes
+        # ✅ Set slack bus type BEFORE generator is created
         if not self.first_gen:
             self.first_gen = True
             self.buses[bus].bus_type = 'slack'
-        # If there already is a generator in the circuit then the next generator is created as PV
         else:
             self.buses[bus].bus_type = 'PV'
+        # Now create the generator with correct bus type
+        self.generators[name] = Generator(name, self.buses[bus], real_power, per_unit_voltage,
+                                          subtransient_x, positive_x, negative_x, z_ground, is_grounded)
+        # Update net real power
+        if bus not in self.real_power:
+            self.real_power[bus] = 0
+        self.real_power[bus] += real_power
         self.calc_ybus()
 
     def calc_ybus(self):
@@ -145,6 +149,94 @@ class Circuit:
         pd.set_option('display.max_columns', None)  # No limit to the number of columns displayed
         pd.set_option('display.width', None)  # No width limit (adjust to your console's width)
         pd.set_option('display.max_colwidth', None)  # No limit to the column width
+
+    def calc_zero_negative_ybus(self):
+        # Step 1: Initialize the Ybus matrix as a zero matrix with dimensions N x N
+        N = len(self.buses)  # Number of buses
+        self.zero_ybus = np.zeros((N, N), dtype=complex)  # create the zero ybus
+        self.negative_ybus = np.zeros((N, N), dtype=complex)  # create the negative ybus
+
+        # Step 2: Create a dictionary to map bus names to indices for easier reference
+        bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
+
+        # ===============================================================================================================#
+        # Step 3: Iterate through all transmission lines
+        for line in self.transmission_lines.values():
+            Yprim_zero = line.zero_yprim  # Get the primitive admittance matrix
+            Yprim = line.y_matrix
+            bus1_idx = bus_indices[line.bus1.name]
+            bus2_idx = bus_indices[line.bus2.name]
+
+            # Add the elements of the zero Yprim matrix into the zero Ybus matrix
+            self.zero_ybus[bus1_idx, bus1_idx] += Yprim_zero.iloc[0, 0]
+            self.zero_ybus[bus1_idx, bus2_idx] += Yprim_zero.iloc[0, 1]
+            self.zero_ybus[bus2_idx, bus1_idx] += Yprim_zero.iloc[1, 0]
+            self.zero_ybus[bus2_idx, bus2_idx] += Yprim_zero.iloc[1, 1]
+
+            # Add the elements of the yprim matrix into the negative ybus matrix
+            self.negative_ybus[bus1_idx, bus1_idx] += Yprim.iloc[0, 0]
+            self.negative_ybus[bus1_idx, bus2_idx] += Yprim.iloc[0, 1]
+            self.negative_ybus[bus2_idx, bus1_idx] += Yprim.iloc[1, 0]
+            self.negative_ybus[bus2_idx, bus2_idx] += Yprim.iloc[1, 1]
+
+        # ==================================================================================================================#
+        # Step 4: Iterate through all transformers
+        for transformer in self.transformers.values():
+            Yprim_zero = transformer.zero_yprim
+            Yprim_neg = transformer.negative_yprim
+            bus1_idx = bus_indices[transformer.bus1.name]
+            bus2_idx = bus_indices[transformer.bus2.name]
+
+            # Only stamp off-diagonals into zero sequence
+            self.zero_ybus[bus1_idx, bus2_idx] += Yprim_zero.iloc[0, 1]
+            self.zero_ybus[bus2_idx, bus1_idx] += Yprim_zero.iloc[1, 0]
+
+            # Add full negative sequence stamping
+            self.negative_ybus[bus1_idx, bus1_idx] += Yprim_neg.iloc[0, 0]
+            self.negative_ybus[bus1_idx, bus2_idx] += Yprim_neg.iloc[0, 1]
+            self.negative_ybus[bus2_idx, bus1_idx] += Yprim_neg.iloc[1, 0]
+            self.negative_ybus[bus2_idx, bus2_idx] += Yprim_neg.iloc[1, 1]
+
+        # ==================================================================================================================#
+        # Step 5: Iterate through all generators
+        for generator in self.generators.values():
+            bus1_idx = bus_indices[generator.bus.name]
+            Yprim_zero = generator.zero_yprim
+            Yprim_neg = generator.negative_yprim
+
+            self.zero_ybus[bus1_idx, bus1_idx] += Yprim_zero.iloc[0, 0]
+            self.negative_ybus[bus1_idx, bus1_idx] += Yprim_neg.iloc[0, 0]
+
+        # ==================================================================================================================#
+        # Step 6: Numerical stability check (ensure no singularities)
+        if np.any(np.diag(self.zero_ybus) == 0):
+            raise ValueError("Ybus matrix has a singularity (zero diagonal entry). Please check bus connections.")
+        if np.any(np.diag(self.negative_ybus) == 0):
+            raise ValueError("Ybus matrix has a singularity (zero diagonal entry). Please check bus connections.")
+
+        # Step 7: Fix diagonals only for buses that have nonzero off-diagonal admittances
+        for i in range(N):
+            off_diag = np.copy(self.zero_ybus[i, :])
+            off_diag[i] = 0  # exclude self-admittance
+            if np.any(off_diag != 0):  # if there are mutual connections
+                self.zero_ybus[i, i] = -np.sum(off_diag)
+
+        # Step 7b: Fix diagonals for negative sequence Ybus (just like zero)
+        for i in range(N):
+            off_diag = np.copy(self.negative_ybus[i, :])
+            off_diag[i] = 0
+            if np.any(off_diag != 0):
+                self.negative_ybus[i, i] = -np.sum(off_diag)
+
+        # Step 8: Convert Ybus into a pandas DataFrame with bus names as row and column indices
+        self.zero_ybus = pd.DataFrame(self.zero_ybus, index=self.buses.keys(), columns=self.buses.keys())
+        self.negative_ybus = pd.DataFrame(self.negative_ybus, index=self.buses.keys(), columns=self.buses.keys())
+
+        # Step 9: Display settings for full matrix visibility
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+        pd.set_option('display.max_colwidth', None)
 
     def get_voltages(self, buses, bus_name):
         if bus_name not in buses:
@@ -260,15 +352,84 @@ class Circuit:
         znn = self.zbus.loc[faulted_bus, faulted_bus]
         i_f = 1.0 / znn
 
-
         for idx, bus_name in enumerate(self.buses):
 
             zkn = self.zbus.loc[bus_name, faulted_bus]
 
-
-
             e_k=1-zkn/znn
             fault_voltage[idx]=e_k
 
-
         return i_f,fault_voltage
+
+    def calculate_asym_fault(self, fault_type, faulted_bus, Zf=0.0):
+        import numpy as np
+        import pandas as pd
+
+        print("\n>>> ENTERED calculate_asym_fault")
+
+        ordered_buses = list(self.buses.keys())
+        b_idx = ordered_buses.index(faulted_bus)
+
+        Y0_np = np.array([
+            [self.zero_ybus.loc[bi, bj] for bj in ordered_buses]
+            for bi in ordered_buses
+        ], dtype=np.complex128)
+        Y1_np = np.array([
+            [self.negative_ybus.loc[bi, bj] for bj in ordered_buses]
+            for bi in ordered_buses
+        ], dtype=np.complex128)
+        Y2_np = np.array([
+            [self.negative_ybus.loc[bi, bj] for bj in ordered_buses]
+            for bi in ordered_buses
+        ], dtype=np.complex128)
+
+        # Just invert diagonal terms directly — all in per-unit already
+        Z0_diag_inv = 1 / Y0_np[b_idx][b_idx]
+        Z1_diag_inv = 1 / Y1_np[b_idx][b_idx]
+        Z2_diag_inv = 1 / Y2_np[b_idx][b_idx]
+
+        print(f"Y0_np[{b_idx},{b_idx}] = {Y0_np[b_idx][b_idx]}")
+        print(f"Expected 1 / Y0 = {Z0_diag_inv}")
+        print(f"Z0[Bus] = {Z0_diag_inv}")
+
+        V_prefault = self.buses[faulted_bus].vpu * np.exp(1j * np.deg2rad(self.buses[faulted_bus].delta))
+        print(f"V_prefault = {V_prefault}")
+
+        if fault_type == "slg":
+            denom = Z0_diag_inv + Z1_diag_inv + Z2_diag_inv + 3 * Zf
+            I_seq = V_prefault / denom
+            I0 = I1 = I2 = I_seq
+
+        elif fault_type == "ll":
+            denom = Z1_diag_inv + Z2_diag_inv + Zf
+            I1 = V_prefault / denom
+            I2 = -I1
+            I0 = 0
+
+        elif fault_type == "dlg":
+            num = V_prefault * (Z1_diag_inv + Z2_diag_inv + Zf)
+            denom = Z0_diag_inv * (Z1_diag_inv + Z2_diag_inv + Zf) + Z1_diag_inv * Z2_diag_inv + Zf * (
+                        Z1_diag_inv + Z2_diag_inv)
+            I0 = num / denom
+            I1 = I0
+            I2 = I0
+
+        else:
+            raise ValueError("Invalid fault type")
+
+        # Convert sequence to phase
+        a = np.exp(2j * np.pi / 3)
+        T_inv = np.array([
+            [1, 1, 1],
+            [1, a ** 2, a],
+            [1, a, a ** 2]
+        ])
+        Iabc = T_inv @ np.array([I0, I1, I2])
+
+        print(f"\nAsymmetrical Fault Currents ({fault_type.upper()}) at {faulted_bus}:")
+        for phase, val in zip(['A', 'B', 'C'], Iabc):
+            mag = abs(val)
+            ang = np.angle(val, deg=True)
+            print(f"Phase {phase}: {mag:.4f} p.u., ∠ {ang:.2f}°")
+
+        return {"Ia": Iabc[0], "Ib": Iabc[1], "Ic": Iabc[2]}, (I0, I1, I2)
