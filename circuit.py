@@ -328,7 +328,7 @@ class Circuit:
 
 
     def modify_y_bus(self):
-        #adds subtransient admittance to each bus that has a generator attached
+        #adds subtransient admittance to each bus that has a generator attached, this creates the positive sequence ybus
 
         bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
 
@@ -361,15 +361,20 @@ class Circuit:
 
         return i_f,fault_voltage
 
-    def calculate_asym_fault(self, fault_type, faulted_bus, Zf=0.0):
+    def calculate_asym_fault(self, fault_type, faulted_bus:str, Zf=0.0):
         import numpy as np
         import pandas as pd
 
         print("\n>>> ENTERED calculate_asym_fault")
 
         ordered_buses = list(self.buses.keys())
-        b_idx = ordered_buses.index(faulted_bus)
+        b_idx = ordered_buses.index(faulted_bus) #index of the faulted bus
 
+        bus_indices = {bus_name: idx for idx, bus_name in enumerate(ordered_buses)} #get a list of indices from the ordered_buses list
+
+
+
+        #convert zero, negative, and negative? ybus matrices from dataframe to numPy arrays
         Y0_np = np.array([
             [self.zero_ybus.loc[bi, bj] for bj in ordered_buses]
             for bi in ordered_buses
@@ -382,6 +387,11 @@ class Circuit:
             [self.negative_ybus.loc[bi, bj] for bj in ordered_buses]
             for bi in ordered_buses
         ], dtype=np.complex128)
+
+        #calcualte the z0, z1, and z2 buses (they are numpy buses)
+        z0_np = np.linalg.inv(Y0_np)
+        z1_np = np.linalg.inv(Y1_np)
+        z2_np = np.linalg.inv(Y2_np)
 
         # Just invert diagonal terms directly — all in per-unit already
         Z0_diag_inv = 1 / Y0_np[b_idx][b_idx]
@@ -425,6 +435,35 @@ class Circuit:
             [1, a, a ** 2]
         ])
         Iabc = T_inv @ np.array([I0, I1, I2])
+
+        #=============Calculating Voltages===========================================#
+        #create 3 vectors to hold the voltages at each bus
+        volt_0 = np.zeros(len(self.buses), dtype=complex) #zero sequence voltage, v0
+        volt_1 = np.zeros(len(self.buses), dtype=complex) # negative sequence voltage, v1
+        volt_2 = np.zeros(len(self.buses), dtype=complex) # second sequence voltage is this supposed to be positive sequence?, v2
+
+        # Z0_diag_inv = 1 / Y0_np[b_idx][b_idx]
+        # Z1_diag_inv = 1 / Y1_np[b_idx][b_idx]
+        # Z2_diag_inv = 1 / Y2_np[b_idx][b_idx]
+        #iterate through all buses to calculate the zero, negative, and positive sequence voltages
+        for bus_k in ordered_buses:
+            k_idx = bus_indices[bus_k] #get the index of the current bus
+
+            zkn0 = z0_np[k_idx][b_idx]
+            zkn1 = z1_np[k_idx][b_idx]
+            zkn2 = z2_np[k_idx][b_idx]
+
+            e_k0 = 1 - zkn0/Z0_diag_inv
+            e_k1 = 1 - zkn1/Z1_diag_inv
+            e_k2 = 1 - zkn2/Z2_diag_inv
+
+
+            volt_0[k_idx] = e_k0
+            volt_1[k_idx] = e_k1
+            volt_2[k_idx] = e_k2
+
+
+
 
         print(f"\nAsymmetrical Fault Currents ({fault_type.upper()}) at {faulted_bus}:")
         for phase, val in zip(['A', 'B', 'C'], Iabc):
