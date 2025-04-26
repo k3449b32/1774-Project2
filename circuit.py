@@ -88,19 +88,19 @@ class Circuit:
             self.reactive_power[bus] -= reactive_power
         self.calc_ybus()
 
-    def add_shunt_capacitor(self, name: str, bus: str, capacitance: float):
+    def add_shunt_capacitor(self, name: str, bus: str, mvar: float):
         if name in self.shunt_capacitors:
             raise ValueError("Capacitor is already in circuit")
         else:
-            self.shunt_capacitors[name] = Shunt_capacitor(name, self.buses[bus],capacitance)
+            self.shunt_capacitors[name] = Shunt_capacitor(name, self.buses[bus],mvar)
 
         self.calc_ybus()
 
-    def add_shunt_inductor(self, name: str, bus: str, inductance: float):
+    def add_shunt_inductor(self, name: str, bus: str, mvar : float):
         if name in self.shunt_inductors:
             raise ValueError("Capacitor is already in circuit")
         else:
-            self.shunt_inductors[name] = Shunt_inductor(name, self.buses[bus], inductance)
+            self.shunt_inductors[name] = Shunt_inductor(name, self.buses[bus], mvar)
 
         self.calc_ybus()
 
