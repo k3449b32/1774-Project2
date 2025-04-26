@@ -2,12 +2,14 @@ import numpy as np
 import pandas as pd
 from geometry import Geometry
 from bus import Bus
+from shunt_capacitor import Shunt_capacitor
 from transmission_line import TransmissionLine
 from bundle import Bundle
 from transformer import Transformer
 from conductor import Conductor
 from generator import Generator
 from load import Load
+from shunt_inductor import Shunt_inductor
 from settings import Settings
 
 class Circuit:
@@ -22,6 +24,8 @@ class Circuit:
         self.transmission_lines = {}
         self.loads = {}
         self.generators = {}
+        self.shunt_capacitors = {}
+        self.shunt_inductors = {}
         self.ybus = None
         self.zbus = None
         self.first_gen = False
@@ -84,6 +88,22 @@ class Circuit:
             self.reactive_power[bus] -= reactive_power
         self.calc_ybus()
 
+    def add_shunt_capacitor(self, name: str, bus: str, capacitance: float):
+        if name in self.shunt_capacitors:
+            raise ValueError("Capacitor is already in circuit")
+        else:
+            self.shunt_capacitors[name] = Shunt_capacitor(name, self.buses[bus],capacitance)
+
+        self.calc_ybus()
+
+    def add_shunt_inductor(self, name: str, bus: str, inductance: float):
+        if name in self.shunt_inductors:
+            raise ValueError("Capacitor is already in circuit")
+        else:
+            self.shunt_inductors[name] = Shunt_inductor(name, self.buses[bus], inductance)
+
+        self.calc_ybus()
+
     def add_generator_element(self, name: str, bus: str, real_power: float, per_unit_voltage: float,
                               subtransient_x, positive_x, negative_x, z_ground, is_grounded):
         if name in self.generators:
@@ -111,6 +131,7 @@ class Circuit:
         # Step 2: Create a dictionary to map bus names to indices for easier reference
         bus_indices = {bus_name: idx for idx, bus_name in enumerate(self.buses)}
 
+        #====================================================================================================#
         # Step 3: Iterate through all transmission lines
         for line in self.transmission_lines.values():
             Yprim = line.y_matrix  # Get the primitive admittance matrix
@@ -122,6 +143,7 @@ class Circuit:
             self.ybus[bus1_idx, bus2_idx] += Yprim.iloc[0, 1]  # Mutual admittance between bus1 and bus2
             self.ybus[bus2_idx, bus1_idx] += Yprim.iloc[1, 0]  # Mutual admittance between bus2 and bus1
             self.ybus[bus2_idx, bus2_idx] += Yprim.iloc[1, 1]  # Self-admittance for bus2
+        #===================================================================================================#
 
         # Step 4: Iterate through all transformers
         for transformer in self.transformers.values():
@@ -134,6 +156,20 @@ class Circuit:
             self.ybus[bus1_idx, bus2_idx] += Yprim.iloc[0, 1]  # Mutual admittance between bus1 and bus2
             self.ybus[bus2_idx, bus1_idx] += Yprim.iloc[1, 0]  # Mutual admittance between bus2 and bus1
             self.ybus[bus2_idx, bus2_idx] += Yprim.iloc[1, 1]  # Self-admittance for bus2
+
+        #iterate through all shunt capacitors, add admittance directly to ybus
+        for inductor in self.shunt_inductors.values(): #iterate thorugh list of inductors
+            y = inductor.y #get value of inductance
+            bus1_idx = bus_indices[inductor.bus.name]
+
+            self.ybus[bus1_idx, bus1_idx] += y #update ybus matrix with value
+
+        # iterate through all shunt capacitors, add admittance directly to ybus
+        for capacitor in self.shunt_capacitors.values():  # iterate thorugh list of inductors
+            y = capacitor.y  # get value of inductance
+            bus1_idx = bus_indices[capacitor.bus.name]
+
+            self.ybus[bus1_idx, bus1_idx] += y  # update ybus matrix with value
 
         # Step 5: Numerical stability check (ensure no singularities)
         if np.any(np.diag(self.ybus) == 0):  # If any diagonal element is zero, it indicates a singularity
