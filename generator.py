@@ -25,11 +25,11 @@ class Generator:
         if self.bus.bus_type == "slack" or self.bus.bus_type == "PV":
             self.z_zero = 1j * 1.0
             self.ground_z = 1j * 0.0
-            self.z_zero_total = self.z_zero
+            self.z_zero_total = self.z_zero*(Settings.base_power / self.mw_setpoint)
         else:
             self.z_zero = 1j * z_zero
             self.ground_z = 1j * ground_z
-            self.z_zero_total = self.z_zero + 3 * self.ground_z
+            self.z_zero_total = (self.z_zero + 3 * self.ground_z)*self.z_zero*(Settings.base_power / self.mw_setpoint) #change of base
 #!!!!!!!!!!! is ground impedance multiplied by 1j???????????????
 
         if self.ground_status == 'no': #if generator is not grounded, y will be zero
@@ -43,6 +43,7 @@ class Generator:
         self.zero_yprim = self.calc_y_matrix(self.y_zero)
         self.negative_yprim = self.calc_y_matrix(self.y_negative)
         #is there a positive sequence yprim??!?
+
 
 
     def calc_y_matrix(self,y):
