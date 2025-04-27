@@ -437,33 +437,49 @@ class Circuit:
         Iabc = T_inv @ np.array([I0, I1, I2])
 
         #=============Calculating Voltages===========================================#
-        #create 3 vectors to hold the voltages at each bus
-        volt_0 = np.zeros(len(self.buses), dtype=complex) #zero sequence voltage, v0
-        volt_1 = np.zeros(len(self.buses), dtype=complex) # negative sequence voltage, v1
-        volt_2 = np.zeros(len(self.buses), dtype=complex) # second sequence voltage is this supposed to be positive sequence?, v2
+        #this part needs to be completly redone!
+        #create a vector to hold all the voltages for each bus
+        volt_012 = np.zeros((3,len(self.buses)), dtype=complex) #zero sequence voltage, v0
 
-        # Z0_diag_inv = 1 / Y0_np[b_idx][b_idx]
-        # Z1_diag_inv = 1 / Y1_np[b_idx][b_idx]
-        # Z2_diag_inv = 1 / Y2_np[b_idx][b_idx]
+
+
+        #this is wrong!
         #iterate through all buses to calculate the zero, negative, and positive sequence voltages
+        busK_zmatrix = np.zeros((3,3)) #create an array that will hold the impedance of the kth bus
+        I_n = np.array([[I0],[I1],[I2]]) #create a array containing sequence currents of the faulted bus
+        vF_matrix = np.array([[0],[1],[0]])
+
+
         for bus_k in ordered_buses:
             k_idx = bus_indices[bus_k] #get the index of the current bus
 
+            #obtain the sequence impedances for the kth bus
             zkn0 = z0_np[k_idx][b_idx]
             zkn1 = z1_np[k_idx][b_idx]
             zkn2 = z2_np[k_idx][b_idx]
 
-            e_k0 = 1 - zkn0/Z0_diag_inv
-            e_k1 = 1 - zkn1/Z1_diag_inv
-            e_k2 = 1 - zkn2/Z2_diag_inv
+            #the diagonals of busK_zmatrix will hold the sequence impedances of the kth bus
+            busK_zmatrix[0,0] = zkn0
+            busK_zmatrix[1,1] = zkn1
+            busK_zmatrix[2,2] = zkn2
+
+            vk_012 = vF_matrix-np.matmul(busK_zmatrix,I_n) #calulate the sequence voltages for the current bus
+
+            #add the voltages to the matrix holding all the voltages
+            volt_012[0,k_idx] = vk_012[0,0]
+            volt_012[1, k_idx] = vk_012[1,0]
+            volt_012[2, k_idx] = vk_012[2,0]
 
 
-            volt_0[k_idx] = e_k0
-            volt_1[k_idx] = e_k1
-            volt_2[k_idx] = e_k2
 
 
 
+
+
+        phase_voltages = T_inv @ volt_012
+
+        print("\nPhase Voltage Matrix: Rows are Va, Vb, Vc, columns are buses\n")
+        print(phase_voltages)
 
         print(f"\nAsymmetrical Fault Currents ({fault_type.upper()}) at {faulted_bus}:")
         for phase, val in zip(['A', 'B', 'C'], Iabc):
@@ -472,3 +488,5 @@ class Circuit:
             print(f"Phase {phase}: {mag:.4f} p.u., ∠ {ang:.2f}°")
 
         return {"Ia": Iabc[0], "Ib": Iabc[1], "Ic": Iabc[2]}, (I0, I1, I2)
+
+
