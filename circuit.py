@@ -380,7 +380,7 @@ class Circuit:
             for bi in ordered_buses
         ], dtype=np.complex128)
         Y1_np = np.array([
-            [self.negative_ybus.loc[bi, bj] for bj in ordered_buses]
+            [self.ybus.loc[bi, bj] for bj in ordered_buses]
             for bi in ordered_buses
         ], dtype=np.complex128)
         Y2_np = np.array([
