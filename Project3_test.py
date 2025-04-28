@@ -51,12 +51,12 @@ circuit1.add_transmission_line("Line 6", circuit1.buses["Bus4"].name, circuit1.b
 circuit1.add_generator_element("Generator 1", circuit1.buses["Bus1"].name, 100, circuit1.buses["Bus1"].vpu,0.12,0.05,0.14,0,'yes' )
 circuit1.add_generator_element("Generator 2", circuit1.buses["Bus7"].name, 200, circuit1.buses["Bus7"].vpu, 0.12,0.05,0.14,(100/18**2),'yes')
 
-circuit1.add_load_element("Load 1", circuit1.buses["Bus3"].name, 110, 50)
-circuit1.add_load_element("Load 2", circuit1.buses["Bus4"].name, 100, 70)
-circuit1.add_load_element("Load 3", circuit1.buses["Bus5"].name, 100, 65)
+circuit1.add_load_element("Load 1", circuit1.buses["Bus3"].name, 150, 30)
+circuit1.add_load_element("Load 2", circuit1.buses["Bus4"].name, 50, 0)
+circuit1.add_load_element("Load 3", circuit1.buses["Bus5"].name, 50, 0)
 
-circuit1.add_shunt_capacitor("Capacitor 1", circuit1.buses["Bus1"].name, 30)
-circuit1.add_shunt_inductor("Inductor 1", circuit1.buses["Bus6"].name,50)
+circuit1.add_shunt_capacitor("Capacitor 1", circuit1.buses["Bus3"].name, 30)
+circuit1.add_shunt_inductor("Inductor 1", circuit1.buses["Bus3"].name,0)
 
 print("\nLine 1 Impedance pu: ", circuit1.transmission_lines["Line 1"].impedance_pu, "Series Admittance pu: ", circuit1.transmission_lines["Line 1"].series_admittance,
       "\nShunt Admittance pu: ", circuit1.transmission_lines["Line 1"].shunt_admittance, "\n",circuit1.transmission_lines["Line 1"].y_matrix)
