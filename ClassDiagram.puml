@@ -95,6 +95,22 @@ class Circuit {
     + get_voltages(buses, bus_name)
     + compute_power_injection(buses, ybus)
     + compute_power_mismatch(buses, ybus):
+    + modify_y_bus()
+    + calculate_fault(faulted_bus)
+    + calculate_asym_fault(self, fault_type, faulted_bus:str, Zf=0.0)
+
+
+}
+
+class Jacobian {
+    -circuit:Circuit
+    +compute_jacobian():
+    +invert_jacobian():
+    +compute_J1():
+    +compute_J2():
+    +compute_J3():
+    +compute_J4():
+
 
 }
 
@@ -110,4 +126,5 @@ TransmissionLine "1" *-- "many" Bundle : contains
 TransmissionLine "1" *-- "many" Geometry : contains
 Transformer "1" *-- "many" Bus : contains
 Bundle "1" *-- "many" Conductor : contains
+Circuit "1" *-- "one" Jacobian : contains
 @enduml
