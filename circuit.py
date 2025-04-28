@@ -490,3 +490,4 @@ class Circuit:
         return {"Ia": Iabc[0], "Ib": Iabc[1], "Ic": Iabc[2]}, (I0, I1, I2)
 
 
+        #1
