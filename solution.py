@@ -20,6 +20,8 @@ class Solution:
         jacobian.compute_jacobian()
 
 
+    #solve the fault, different methods are called depending on what fault type is selected
+    #the bus where the fault occurs is specified by the user, only one bus can be specified at a time
     def solve_fault(self,bus_name,mode):
         self.mode=mode
 
@@ -31,9 +33,34 @@ class Solution:
             print("\nfault_current:\n", fault_current)
             print("\nfault_voltage:\n", fault_voltage)
 
-        if mode == 'line_to_ground':
-            pass
-        if mode == 'line_to_line':
-            pass
-        if mode == 'double-line-to-line':
-            pass
+        if mode == 'slg':
+            self.circuit.calc_ybus()
+            self.circuit.modify_y_bus()
+
+            asym_fault_current, sequence_currents = self.circuit.calculate_asym_fault("slg", bus_name, Zf=0.0)
+
+            print("\nAsymmetrical Fault Currents (SLG) at ",bus_name,":")
+            print(f"Ia: {asym_fault_current['Ia']}")
+            print(f"Ib: {asym_fault_current['Ib']}")
+            print(f"Ic: {asym_fault_current['Ic']}")
+
+        if mode == 'll':
+            self.circuit.calc_ybus()
+            self.circuit.modify_y_bus()
+
+            asym_fault_current, sequence_currents = self.circuit.calculate_asym_fault("ll", bus_name, Zf=0.0)
+
+            print("\nAsymmetrical Fault Currents (L-L) at ",bus_name,":")
+            print(f"Ia: {asym_fault_current['Ia']}")
+            print(f"Ib: {asym_fault_current['Ib']}")
+            print(f"Ic: {asym_fault_current['Ic']}")
+        if mode == 'dlg':
+            self.circuit.calc_ybus()
+            self.circuit.modify_y_bus()
+
+            asym_fault_current, sequence_currents = self.circuit.calculate_asym_fault("dlg", bus_name, Zf=0.0)
+
+            print("\nAsymmetrical Fault Currents (DLG) at ", bus_name, ":")
+            print(f"Ia: {asym_fault_current['Ia']}")
+            print(f"Ib: {asym_fault_current['Ib']}")
+            print(f"Ic: {asym_fault_current['Ic']}")
